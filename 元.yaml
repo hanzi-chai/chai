@@ -1,0 +1,7 @@
+name: 木
+inherit: 木
+---
+name: 丘上
+inherit: 丘
+slice: [1, 2, 3, 4]
+---

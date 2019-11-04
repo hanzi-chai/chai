@@ -1,3 +1,6 @@
+import sys
+sys.path.append('/usr/local/lib/python3.7/site-packages/')
+import yaml
 from fractions import Fraction as F
 
 class Stroke:
@@ -5,14 +8,13 @@ class Stroke:
     定义一个笔画对象，包括类别（横竖撇点折）和起点、终点、经过点。
     横竖一般不写经过点，撇点一般要写经过点以描述弯曲。
     """
-    def __init__(self, category, start, end, mid=None):
-        self.category = category
-        self.start = start
-        self.mid = mid
-        self.end = end
+    def __init__(self, object):
+        self.type = object['type']
+        self.start = object['start']
+        self.end = object['end']
     
     def __str__(self):
-        return str(self.category) + ':' + str(self.start) + '->' + str(self.end) + ' '
+        return str(self.type) + ':' + str(self.start) + '->' + str(self.end) + ' '
 
 class Char:
     """
@@ -106,6 +108,11 @@ def evaluate(scheme):
         n += 10**(-index) * char.getLen()
     return n
 
+zi = yaml.load_all(open('Zi.yaml'), Loader=yaml.BaseLoader)
+CHARLIST = []
+for i in zi:
+    print(i)
+
 # 「木」的四个笔画
 heng = Stroke('横', (F(1,10), 0.2), (0.9, 0.2))
 shu = Stroke('竖', (0.5, 0.1), (0.5, 0.9))
@@ -120,16 +127,16 @@ zigenshu = Char('丨', (shu, ))
 zigenpie = Char('丿', (pie, ))
 zigendian = Char('丶', (dian, ))
 
-# 将「十」选作字根，当然单笔画也是字根
-roots = {shi, zigenheng, zigenshu, zigenpie, zigendian}
+# # 将「十」选作字根，当然单笔画也是字根
+# roots = {shi, zigenheng, zigenshu, zigenpie, zigendian}
 
-# 生成「木」的所有拆分可能性。应该有两种：拆成「十+3+4」和拆成「1+2+3+4」
-schemes = mu.allPossibleScheme(roots)
-# 对拆分进行估值，第一种给出 2.11，第二种给出 1.111，所以第一种胜出
-schemesEvaluate = [(scheme, evaluate(scheme)) for scheme in schemes]
-schemesEvaluate = sorted(schemesEvaluate, key=lambda x: x[1], reverse=True)
-bestScheme = schemesEvaluate[0][0]
-bestScore = schemesEvaluate[0][1]
-print('汉字「%s」的拆分结果为：' % mu.name)
-for index, char in enumerate(bestScheme):
-    print('第 %d 个字根是：' % (index + 1), char)
+# # 生成「木」的所有拆分可能性。应该有两种：拆成「十+3+4」和拆成「1+2+3+4」
+# schemes = mu.allPossibleScheme(roots)
+# # 对拆分进行估值，第一种给出 2.11，第二种给出 1.111，所以第一种胜出
+# schemesEvaluate = [(scheme, evaluate(scheme)) for scheme in schemes]
+# schemesEvaluate = sorted(schemesEvaluate, key=lambda x: x[1], reverse=True)
+# bestScheme = schemesEvaluate[0][0]
+# bestScore = schemesEvaluate[0][1]
+# print('汉字「%s」的拆分结果为：' % mu.name)
+# for index, char in enumerate(bestScheme):
+#     print('第 %d 个字根是：' % (index + 1), char)

@@ -1,0 +1,22 @@
+# 
+name: 一
+strokes:
+  - type: 横
+    path: {start: [100, 500], stop: [900, 500]}
+---
+name: 二
+strokes:
+  - type: 横
+    path: {start: [200, 400], stop: [800, 400]}
+  - type: 横
+    path: {start: [100, 600], stop: [900, 600]}
+---
+name: 匚
+strokes:
+  - type: 横
+    path: {start: [200, 200], stop: [800, 200]}
+  - type: 折
+    path:
+      - {start: [200, 200], stop: [200, 800]}
+      - {start: [200, 800], stop: [800, 800]}
+
