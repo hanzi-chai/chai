@@ -1,7 +1,4 @@
-import sys
-sys.path.append('/usr/local/lib/python3.7/site-packages/')
 import yaml
-from fractions import Fraction as F
 
 class Stroke:
     """
@@ -114,7 +111,7 @@ for i in zi:
     print(i)
 
 # 「木」的四个笔画
-heng = Stroke('横', (F(1,10), 0.2), (0.9, 0.2))
+heng = Stroke('横', (0.1, 0.2), (0.9, 0.2))
 shu = Stroke('竖', (0.5, 0.1), (0.5, 0.9))
 pie = Stroke('撇', (0.5, 0.2), (0.05, 0.8), (0.3, 0.6))
 dian = Stroke('点', (0.5, 0.2), (0.95, 0.8), (0.7, 0.6))
