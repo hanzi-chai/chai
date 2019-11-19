@@ -1,0 +1,13 @@
+# Chai 字根文件：五笔字型 86 版
+
+schema:
+  name: 五笔字型 86 版
+  version: "0.1"
+  author:
+    - 发明人 王永民
+    - 重建人 蓝落萧
+  description: |
+    用于测试自动拆分
+
+map:
+  王: g

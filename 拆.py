@@ -6,12 +6,14 @@ class Stroke:
     横竖一般不写经过点，撇点一般要写经过点以描述弯曲。
     """
     def __init__(self, object):
-        self.type = object['type']
-        self.start = object['start']
-        self.end = object['end']
+        self.type = object[0]
+        controlList = []
+        for point in object[1:]:
+            controlList.append((int(point[0]), int(point[1])))
+        self.controlList = controlList
     
     def __str__(self):
-        return str(self.type) + ':' + str(self.start) + '->' + str(self.end) + ' '
+        return str(self.type) + ':' + str(self.controlList) + ' '
 
 class Char:
     """
@@ -105,24 +107,30 @@ def evaluate(scheme):
         n += 10**(-index) * char.getLen()
     return n
 
-zi = yaml.load_all(open('Zi.yaml'), Loader=yaml.BaseLoader)
+WEN = yaml.load(open('文.yaml'), Loader=yaml.BaseLoader)
+WUBISCHEMA = yaml.load(open('preset/wubi86.schema.yaml'), Loader=yaml.BaseLoader)
+WUBIDICT = yaml.load(open('preset/wubi86.dict.yaml'), Loader=yaml.BaseLoader)
+ROOTSET = WUBIDICT['map']
+
 CHARLIST = []
-for i in zi:
-    print(i)
+for char in WEN:
+    strokeList = [Stroke(stroke) for stroke in WEN[char]]
+    CHARLIST.append(Char(char, strokeList))
 
-# 「木」的四个笔画
-heng = Stroke('横', (0.1, 0.2), (0.9, 0.2))
-shu = Stroke('竖', (0.5, 0.1), (0.5, 0.9))
-pie = Stroke('撇', (0.5, 0.2), (0.05, 0.8), (0.3, 0.6))
-dian = Stroke('点', (0.5, 0.2), (0.95, 0.8), (0.7, 0.6))
 
-# 初始化「木」，并同时初始化一个字根「十」
-mu = Char('木', (heng, shu, pie, dian))
-shi = Char('十', (heng, shu))
-zigenheng = Char('一', (heng, ))
-zigenshu = Char('丨', (shu, ))
-zigenpie = Char('丿', (pie, ))
-zigendian = Char('丶', (dian, ))
+# # 「木」的四个笔画
+# heng = Stroke('横', (0.1, 0.2), (0.9, 0.2))
+# shu = Stroke('竖', (0.5, 0.1), (0.5, 0.9))
+# pie = Stroke('撇', (0.5, 0.2), (0.05, 0.8), (0.3, 0.6))
+# dian = Stroke('点', (0.5, 0.2), (0.95, 0.8), (0.7, 0.6))
+
+# # 初始化「木」，并同时初始化一个字根「十」
+# mu = Char('木', (heng, shu, pie, dian))
+# shi = Char('十', (heng, shu))
+# zigenheng = Char('一', (heng, ))
+# zigenshu = Char('丨', (shu, ))
+# zigenpie = Char('丿', (pie, ))
+# zigendian = Char('丶', (dian, ))
 
 # # 将「十」选作字根，当然单笔画也是字根
 # roots = {shi, zigenheng, zigenshu, zigenpie, zigendian}
