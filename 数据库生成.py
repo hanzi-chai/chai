@@ -3,9 +3,30 @@ import yaml
 with open('GB.txt', 'r') as f:
     GB = [line.strip('\r\n') for line in f]
 
+simplify = yaml.load(open('文.type.yaml'), Loader=yaml.BaseLoader)
+patch = yaml.load(open('文.patch.yaml'), Loader=yaml.BaseLoader)
 ZI = yaml.load(open('字.yaml'), Loader=yaml.BaseLoader)
-WEN_ = yaml.load(open('文.raw.yaml'), Loader=yaml.BaseLoader)
+# WEN_ = yaml.load(open('文.raw.yaml'), Loader=yaml.BaseLoader)
 MING = yaml.load(open('文.alias.yaml'), Loader=yaml.BaseLoader)
+STROKES = yaml.load(open('文.type.yaml'), Loader=yaml.BaseLoader)
+
+# 为 raw 写一个特殊的 Loader，否则太慢
+WEN_ = {}
+with open('文.raw.yaml') as f:
+    wenl = f.readlines()[2:]
+    for i in wenl:
+        if i[1] == ':':
+            current = i[0]
+            WEN_[current] = []
+        else:
+            content = i[5:-1]
+            try:
+                strokeType, data = content.split(',', 1)
+                strokeType = strokeType.strip()
+                data = '[' + data.strip()
+                WEN_[current].append([strokeType] + eval(data))
+            except Exception:
+                WEN_[current].append([content.strip(']')])
 
 used = {}
 
@@ -57,21 +78,20 @@ require = sorted(set(require), key=lambda x: len(x)*100000 + ord(x[0]) + ord(x[-
 with open('文.yaml', 'w') as f:
     f.write('# 汉字自动拆分系统「文」数据库\n# 本文件是「依.py」为嵌套表自动生成的依赖，无需手动编辑。\n')
     for component in require:
-        if len(component) == 1:
-            try:
-                strokeList = WEN_[component]
-            except KeyError:
-                print(component)
-                strokeList = []
+        if component in STROKES.values(): continue
+        if component in patch:
+            strokeList = patch[component]
+        elif len(component) == 1:
+            strokeList = WEN_[component]
         else:
             strokeList = []
-            try:
-                sourceChar, strokeIndexList = MING[component]
-                sourceStrokeList = WEN_[sourceChar]
-                for index in strokeIndexList:
-                    strokeList.append(sourceStrokeList[int(index)])
-            except Exception:
-                print(component)
-        f.write('%s: \n' % component)
-        for i in strokeList:
-            f.write('  - %s\n' % str(i).replace("'", ''))
+            sourceChar, strokeIndexList = MING[component]
+            sourceStrokeList = WEN_[sourceChar]
+            for index in strokeIndexList:
+                strokeList.append(sourceStrokeList[int(index)])
+        f.write('%s:\n' % component)
+        for stroke in strokeList:
+            if stroke[0] == 'bbx':
+                pass
+            else:
+                f.write('  - %s\n' % str([simplify[stroke[0]]] + stroke[1:]).replace("'", ''))
