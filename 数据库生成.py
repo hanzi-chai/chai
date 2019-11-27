@@ -76,7 +76,7 @@ print('非法部件：')
 require = sorted(set(require), key=lambda x: len(x)*100000 + ord(x[0]) + ord(x[-1])/100000)
 
 with open('文.yaml', 'w') as f:
-    f.write('# 汉字自动拆分系统「文」数据库\n# 本文件是「依.py」为嵌套表自动生成的依赖，无需手动编辑。\n')
+    f.write('# 汉字自动拆分系统「文」数据库\n# 本文件由「数据库生成.py」根据「字」数据库自动生成，禁止手动编辑。\n')
     for component in require:
         if component in STROKES.values(): continue
         if component in patch:
@@ -91,7 +91,4 @@ with open('文.yaml', 'w') as f:
                 strokeList.append(sourceStrokeList[int(index)])
         f.write('%s:\n' % component)
         for stroke in strokeList:
-            if stroke[0] == 'bbx':
-                pass
-            else:
-                f.write('  - %s\n' % str([simplify[stroke[0]]] + stroke[1:]).replace("'", ''))
+            f.write('  - %s\n' % str([stroke[0]] + stroke[1:]).replace("'", ''))

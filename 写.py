@@ -86,7 +86,7 @@ def c(argList):
         r = cubic(t, this, first, second, end)
         turtle.goto(r.c)
 
-target = '凸'
+target = '戍'
 yi = PF[target]
 print(yi)
 for stroke in yi:

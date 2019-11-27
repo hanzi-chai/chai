@@ -1,6 +1,9 @@
 import yaml
 import time
 
+time1 = 0
+time2 = 0
+
 class Stroke:
     """
     笔画对象：
@@ -44,9 +47,11 @@ class Char:
         """
         输出：字的所有非空切片
         """
+        global time1
+        start = time.time()
         n = self.getLen()
         # 生成掩码，二进制分别为 1，10，100……
-        mask = [1<<i for i in range(n)]
+        mask = [1<<(n-i-1) for i in range(n)]
         powerDict = {}
         for k in range(1, 2**n):
             sliceStrokeList = []
@@ -55,50 +60,55 @@ class Char:
             for idx, item in enumerate(mask):
                 if k & item: sliceStrokeList.append(self.strokeList[idx])
             if k & (k-1): # k 不是 2 的幂，说明切片不是单笔画，寻找对应的字根
-                powerDict[k] = DEGENERACY.get(Char('', sliceStrokeList).degenerate())
+                deg = Char('', sliceStrokeList).degenerate()
+                powerDict[k] = DEGENERACY.get(deg)
             else: # 切片是单笔画，根据「单笔画无毛」假设，无需寻找字根
                 stroke = sliceStrokeList[0]
                 powerDict[k] = Char(stroke.type, [Stroke([stroke.type])])
+        end = time.time()
+        time1 = time1 + end - start
         return powerDict
 
     def decompose(self):
         """
         输出：在给定字根集下，所有可能的拆分
         """
+        global time2
         powerDict = self.getPowerDict()
+        start = time.time()
+        l = self.getLen()
+        z = 2**l
         # 建立一个字典记录拆分状态，若已拆完则为真，否则为假
-        schemeDict = {(2**self.getLen() - 1, ): False}
+        uncompletedList = [(z - 1, )]
+        completedList = []
         # 将拆分列表进行迭代，每次选取未拆完的一个对象，将最后一个组件拆分一次
-        while not all(schemeDict.values()):
-            newSchemeDict = {}
-            for scheme, completed in schemeDict.items():
-                if not completed:
-                    residue = scheme[-1]
-                    rootList = filter(lambda x: powerDict[x], nextRoot(residue))
-                    for root in rootList:
-                        if root != residue: # 新拆出的字根和原有剩余一样大，说明已拆完
-                            newSchemeDict[scheme[:-1] + (root, residue - root)] = False
-                        else: # 没拆完
-                            newSchemeDict[scheme[:-1] + (root, )] = True
-                else:
-                    newSchemeDict[scheme] = schemeDict[scheme]
-            schemeDict = newSchemeDict
-        allScheme = [tuple(powerDict[x] for x in key) for key in schemeDict]
-        bestScheme = sorted(allScheme, key=evaluate, reverse=True)[0]
-        return bestScheme
+        while uncompletedList:
+            newUncompletedList = []
+            for scheme in uncompletedList:
+                residue = scheme[-1]
+                rootList = filter(lambda x: powerDict[x], nextRoot(residue))
+                for root in rootList:
+                    if root != residue: # 没拆完
+                        newUncompletedList.append(scheme[:-1] + (root, residue - root))
+                    else: # 新拆出的字根和原有剩余一样大，说明已拆完
+                        completedList.append(scheme)
+            uncompletedList = newUncompletedList
+        # 开始择优
+        schemeList = completedList
+        # 根少优先
+        minLen = min(len(x) for x in schemeList)
+        schemeList = list(filter(lambda x: len(x) == minLen, schemeList))
+        # 笔顺优先
+        bestBishun = min(sum((bishun(n, z, l) for n in scheme), tuple()) for scheme in schemeList)
+        schemeList = list(filter(lambda x: sum((bishun(n, z, l) for n in x), tuple()) == bestBishun, schemeList))
+        # 取大优先
+        bestScheme = max(schemeList, key=quda)
+        end = time.time()
+        time2 = time2 + end - start
+        return tuple(powerDict[x] for x in bestScheme)
     
     def __str__(self):
         return self.name + '{\n\t' + '\n\t'.join(str(stroke) for stroke in self.strokeList) + '\n\t}'
-
-def evaluate(scheme):
-    """
-    输入：一个拆分
-    输出：对拆分的估值，估值越大越优先，这里采用的规则是「取大优先」
-    """
-    n = 0
-    for index, char in enumerate(scheme):
-        n += 10**(-index) * char.getLen()
-    return n
 
 def nextRoot(n):
     """
@@ -112,6 +122,28 @@ def nextRoot(n):
         n = n & (n-1)
         powerList = powerList + [x + m for x in powerList]
     return powerList[len(powerList)//2:]
+
+def strokeNum(n):
+    """
+    """
+    count = 0
+    while n:
+        n = n & (n-1)
+        count = count + 1
+    return count
+    
+def quda(scheme):
+    """
+    输入：一个拆分
+    输出：对拆分的估值，估值越大越优先，这里采用的规则是「取大优先」
+    """
+    n = 0
+    for index, char in enumerate(scheme):
+        n += 10**(-index) * strokeNum(char)
+    return n
+
+def bishun(n, maximum, m):
+    return tuple(k for k in range(m) if (maximum>>(k+1)) & n)
 
 NAME = 'wubi98'
 WEN = yaml.load(open('文.yaml'), Loader=yaml.BaseLoader)
@@ -179,18 +211,59 @@ for key, componentList in DICT['map'].items():
             char = Char(component, strokeList)
             ROOTSET[component] = key
             DEGENERACY[char.degenerate()] = char
+            # print(char.degenerate())
         elif component in ZI: # 这种情况对应着合体字根，暂不考虑，等写嵌套的时候再写
             pass
 
-CHARLIST = []
-for char in WEN:
-    strokeList = [Stroke(stroke) for stroke in WEN[char]]
-    CHARLIST.append(Char(char, strokeList))
-
 start = time.time()
+
+COMPONENT = {}
+for char in WEN:
+    # if char == '下':
+    strokeList = [Stroke(stroke) for stroke in WEN[char]]
+    COMPONENT[char] = Char(char, strokeList).decompose()
+
+CHARLIST = sorted(filter(lambda x: len(x) == 1, list(WEN.keys()) + list(ZI.keys())), key=ord)
+
+def flat_and_filter(l):
+    """
+    输入：列表
+    输出：将所有嵌套列表展开，并删去结构操作符
+    """
+    res = []
+    for i in l:
+        if isinstance(i, list):
+            res.extend(flat_and_filter(i))
+        else:
+            res.append(i)
+    res = list(filter(lambda x: ord(x[0]) > 128, res))
+    return res
+
+def dependencies(char):
+    """
+    输入：字
+    输出：计算一个字所依赖的所有其他字
+    """
+    l = flat_and_filter(ZI[char])
+    while any(x in ZI for x in l):
+        lnew = []
+        for x in l:
+            if x in ZI: 
+                lnew.append(ZI[x])
+            else: lnew.append(x)
+        l = flat_and_filter(lnew)
+    return l
+
 with open('preset/%s.result.yaml' % NAME, 'w') as f:
     for charIndex, char in enumerate(CHARLIST):
-        scheme = char.decompose()
-        f.write(char.name + '\t' + ''.join(ROOTSET[component.name] for component in scheme) + '\n')
+        if char in WEN:
+            scheme = COMPONENT[char]
+        else:
+            scheme = sum((COMPONENT.get(component, (Char(component, [[component]]), )) for component in dependencies(char)), tuple())
+        if len(scheme) > 4:
+            scheme = scheme[:3] + scheme[-1:]
+        f.write(char + '\t' + ''.join(ROOTSET[component.name] for component in scheme) + '\n')
 end = time.time()
 print('拆分用时：', end - start)
+print('幂集用时：', time1)
+print('迭代用时：', time2)
