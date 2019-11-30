@@ -3,6 +3,7 @@ import time
 
 time1 = 0
 time2 = 0
+complexity = {n: [] for n in range(1, 12)}
 
 class Stroke:
     """
@@ -93,6 +94,7 @@ class Char:
                     else: # 新拆出的字根和原有剩余一样大，说明已拆完
                         completedList.append(scheme)
             uncompletedList = newUncompletedList
+        complexity[self.getLen()].append(len(completedList))
         # 开始择优
         schemeList = completedList
         # 根少优先
@@ -267,3 +269,8 @@ end = time.time()
 print('拆分用时：', end - start)
 print('幂集用时：', time1)
 print('迭代用时：', time2)
+
+complexity = {key: sum(value)/len(value) for key, value in complexity.items()}
+with open('comp.txt', 'w') as f:
+    for key, value in complexity.items():
+        f.write('%d\t%d\n' % (key, value))
