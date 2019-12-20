@@ -270,7 +270,7 @@ print('拆分用时：', end - start)
 print('幂集用时：', time1)
 print('迭代用时：', time2)
 
-complexity = {key: sum(value)/len(value) for key, value in complexity.items()}
-with open('comp.txt', 'w') as f:
-    for key, value in complexity.items():
-        f.write('%d\t%d\n' % (key, value))
+# complexity = {key: sum(value)/len(value) for key, value in complexity.items()}
+# with open('comp.txt', 'w') as f:
+#     for key, value in complexity.items():
+#         f.write('%d\t%d\n' % (key, value))

@@ -1,0 +1,34 @@
+# Chai 配置文件：指尖一码顶
+
+schema:
+  name: 指尖一码顶
+  version: "0.1"
+  author:
+    - 发明人 老大鸽
+    - 重建人 老大鸽
+  description: |
+    指尖一码顶，又称鸽码。
+    本输入方案为纯单字顶功方案，采用一码顶格式。
+    (a ab abb abbb abbb0)
+
+engine:
+  - degenerator
+  - evaluator
+  - aliaser
+  - selector
+  - encoder
+
+degenerator:
+
+evaluator:
+  - 根少优先
+  - 能连不交
+  - 能散不连
+  - 取大优先
+
+aliaser:
+  alias: wubi98
+
+selector:
+
+encoder:
