@@ -62,6 +62,7 @@ class Schema:
         """
         功能：加载基础数据，并加载用户方案（暂定）
         """
+        self.name = schemaName
         self.__fieldDict = {
             '笔画列表': getStrokeList,
             '笔画拓扑': getTopoList
@@ -71,19 +72,61 @@ class Schema:
             '笔顺优先': schemeOrder,
             '取大优先': schemeBias
         }
-        self.__wen = loadYAML('文') # 文数据库，即基础字根
-        self.__zi = loadYAML('字') # 字数据库，即嵌套表
+        self.wen = loadYAML('文.yaml') # 文数据库，即基础字根
+        self.zi = loadYAML('字.yaml') # 字数据库，即嵌套表
         self.tree = {}
-        for nameChar, expression in self.__zi.items():
-            tree = Tree(nameChar, expression, self.__zi)
+        for nameChar, expression in self.zi.items():
+            tree = Tree(nameChar, expression, self.zi)
             self.tree[nameChar] = tree
-        allKeys = list(self.__wen.keys()) + list(self.__zi.keys())
+        allKeys = list(self.wen.keys()) + list(self.zi.keys())
         self.charList = sorted(filter(lambda x: len(x) == 1, allKeys), key = ord)
-        self.dir = 'preset/%s/' % schemaName
-        self.schema = loadYAML('%s.schema' % schemaName, self.dir)
-        self.dict = loadYAML('%s.dict' % schemaName, self.dir)
-        self.alias = loadYAML('%s.alias' % schemaName, self.dir)
-        self.parseDictAndAlias()
+        self.encoder = {}
+        self.schema = loadYAML('preset/%s.schema.yaml' % self.name)
+        if 'alias' not in self.schema: self.schema['alias'] = {}
+        self.parseSchema()
+    
+    def parseSchema(self):
+        """
+        功能：解析出退化的用户字根，建立退化字根到字根的字典、字根到键位的字典
+        输入：基础数据、用户方案（Schema）
+        输出：用户字根索引字典 degeneracy 、键位索引字典 rootSet
+        """
+        # 检查笔画定义是否完整
+        lostStrokes = checkCompleteness(self.schema['stroke'])
+        if lostStrokes: # 若有缺失定义，发起错误
+            raise ValueError('未定义的笔画：%s' % str(lostStrokes))
+        for component in self.schema['alias']:
+            indexList = self.schema['alias'][component][1]
+            self.schema['alias'][component][1] = expand(indexList) # 展开省略式
+        self.rootSet = {} # 字根名到键位的映射，用于取码时键位索引
+        self.degeneracy = {} # 退化字根到字根的映射，用于构建powerDict
+        for key, rootList in self.schema['map'].items():
+            for root in rootList:
+                # 是单笔画字根
+                if root in self.schema['stroke']:
+                    for strokeType in self.schema['stroke'][root]:
+                        self.rootSet[strokeType] = key
+                        self.degeneracy[strokeType] = strokeType
+                # 字根是「文」数据中的一个部件
+                elif root in self.wen:
+                    strokeList = [Stroke(stroke)
+                                  for stroke in self.wen[root]]
+                    objectChar = Char(root, strokeList)
+                    self.rootSet[root] = key
+                    characteristicString = self.degenerator(objectChar)
+                    self.degeneracy[characteristicString] = objectChar.name
+                # 字根不是「文」数据库中的部件，但用户定义了它
+                elif root in self.schema['alias']:
+                    source, indexer = self.schema['alias'][root]
+                    strokeList = [Stroke(self.wen[source][int(index)])
+                                  for index in indexer]
+                    objectChar = Char(root, strokeList)
+                    self.rootSet[root] = key
+                    characteristicString = self.degenerator(objectChar)
+                    self.degeneracy[characteristicString] = objectChar.name
+                # 这种情况对应着合体字根，暂不考虑，等写嵌套的时候再写
+                elif root in self.zi:
+                    pass
 
     def setField(self, fieldName, field):
         self.__fieldDict[fieldName] = field
@@ -170,50 +213,6 @@ class Schema:
                 for x in objectChar.schemeList[0])
         else:
             raise ValueError('您提供的拆分规则不能唯一确定拆分结果。例如，字「%s」有如下拆分方式：%s' % (objectChar.name, objectChar.schemeList))
-    
-    def parseDictAndAlias(self):
-        """
-        功能：解析出退化的用户字根，建立退化字根到字根的字典、字根到键位的字典
-        输入：基础数据、用户方案（Schema）
-        输出：用户字根索引字典 degeneracy 、键位索引字典 rootSet
-        """
-        # 检查笔画定义是否完整
-        lostStrokes = checkCompleteness(self.dict['stroke'])
-        if lostStrokes: # 若有缺失定义，发起错误
-            raise ValueError('未定义的笔画：%s' % str(lostStrokes))
-        else: # 否则，规整数据
-            for component in self.alias:
-                indexList = self.alias[component][1]
-                self.alias[component][1] = expand(indexList) # 展开省略式
-        self.rootSet = {} # 字根名到键位的映射，用于取码时键位索引
-        self.degeneracy = {} # 退化字根到字根的映射，用于构建powerDict
-        for key, rootList in self.dict['map'].items():
-            for root in rootList:
-                # 是单笔画字根
-                if root in self.dict['stroke']:
-                    for strokeType in self.dict['stroke'][root]:
-                        self.rootSet[strokeType] = key
-                        self.degeneracy[strokeType] = strokeType
-                # 字根是「文」数据中的一个部件
-                elif root in self.__wen:
-                    strokeList = [Stroke(stroke)
-                                  for stroke in self.__wen[root]]
-                    objectChar = Char(root, strokeList)
-                    self.rootSet[root] = key
-                    characteristicString = self.degenerator(objectChar)
-                    self.degeneracy[characteristicString] = objectChar.name
-                # 字根不是「文」数据库中的部件，但用户定义了它
-                elif root in self.alias:
-                    source, indexer = self.alias[root]
-                    strokeList = [Stroke(self.__wen[source][int(index)])
-                                  for index in indexer]
-                    objectChar = Char(root, strokeList)
-                    self.rootSet[root] = key
-                    characteristicString = self.degenerator(objectChar)
-                    self.degeneracy[characteristicString] = objectChar.name
-                # 这种情况对应着合体字根，暂不考虑，等写嵌套的时候再写
-                elif root in self.__zi:
-                    pass
 
     def run(self):
         """
@@ -231,8 +230,8 @@ class Schema:
         self.gpdTime = 0
         self.decTime = 0
         self.selTime = 0
-        for nameChar in self.__wen:
-            strokeList = [Stroke(stroke) for stroke in self.__wen[nameChar]]
+        for nameChar in self.wen:
+            strokeList = [Stroke(stroke) for stroke in self.wen[nameChar]]
             objectChar = Char(nameChar, strokeList)
             objectChar.bestScheme = None
             time0 = time.time()
@@ -250,3 +249,82 @@ class Schema:
             self.gpdTime += time1 - time0
             self.decTime += time2 - time1
             self.selTime += time3 - time2
+    
+    def output(self, directory='preset/'):
+        with open('%s%s.dict.yaml' % (directory, self.name), 'w', encoding='utf-8') as f: # 写进文件
+            f.write('# Chai dictionary: %s\n\n---\nname: %s\n' % (self.name, self.name))
+            if self.schema['schema'].get('version'):
+                f.write('version: %s' % self.schema['schema'].get('version'))
+            for nameChar in self.charList:
+                f.write('%s\t%s\n' % (nameChar, self.encoder[nameChar]))
+
+class Erbi(Schema):
+
+    def genRoot(self, objectChar):
+        """
+        功能：二笔的 powerDict 只含顺序取笔
+        """
+        for k in range(2, objectChar.charlen + 1):
+            characteristicString = self.degenerator(Char('', objectChar.strokeList[:k]))
+            if self.degeneracy.get(characteristicString):
+                objectChar.root = self.degeneracy.get(characteristicString)
+    
+    def run(self):
+        self.category = {}
+        for category, strokeTypeList in self.schema['stroke'].items():
+            for strokeType in strokeTypeList:
+                self.category[strokeType] = category
+        self.component = {}
+        for nameChar in self.wen:
+            strokeList = [Stroke(stroke) for stroke in self.wen[nameChar]]
+            objectChar = Char(nameChar, strokeList)
+            objectChar.root = None
+            strokeCategoryList = [self.category[stroke.type] for stroke in strokeList]
+            self.genRoot(objectChar)
+            if not objectChar.root:
+                objectChar.root = ''.join(strokeCategoryList[:2])
+            self.component[nameChar] = (objectChar.root, strokeCategoryList)
+
+    def parseSchema(self):
+        """
+        功能：解析出退化的用户字根，建立退化字根到字根的字典、字根到键位的字典
+        输入：基础数据、用户方案（Schema）
+        输出：用户字根索引字典 degeneracy 、键位索引字典 rootSet
+        """
+        # 检查笔画定义是否完整
+        lostStrokes = checkCompleteness(self.schema['stroke'])
+        if lostStrokes: # 若有缺失定义，发起错误
+            raise ValueError('未定义的笔画：%s' % str(lostStrokes))
+        for component in self.schema['alias']:
+            indexList = self.schema['alias'][component][1]
+            self.schema['alias'][component][1] = expand(indexList) # 展开省略式
+        self.rootSet = {} # 字根名到键位的映射，用于取码时键位索引
+        self.degeneracy = {} # 退化字根到字根的映射，用于构建powerDict
+        for key, rootList in self.schema['map'].items():
+            for root in rootList:
+                if root in self.schema['stroke']:
+                    # 是单笔画字根
+                    self.rootSet[root] = key
+                elif len(root) == 2 and root[0] in self.schema['stroke'] and root[1] in self.schema['stroke']:
+                    # 是双笔画字根
+                    self.rootSet[root] = key
+                # 字根是「文」数据中的一个部件
+                elif root in self.wen:
+                    strokeList = [Stroke(stroke)
+                                  for stroke in self.wen[root]]
+                    objectChar = Char(root, strokeList)
+                    self.rootSet[root] = key
+                    characteristicString = self.degenerator(objectChar)
+                    self.degeneracy[characteristicString] = objectChar.name
+                # 字根不是「文」数据库中的部件，但用户定义了它
+                elif root in self.schema['alias']:
+                    source, indexer = self.schema['alias'][root]
+                    strokeList = [Stroke(self.wen[source][int(index)])
+                                  for index in indexer]
+                    objectChar = Char(root, strokeList)
+                    self.rootSet[root] = key
+                    characteristicString = self.degenerator(objectChar)
+                    self.degeneracy[characteristicString] = objectChar.name
+                # 这种情况对应着合体字根，暂不考虑，等写嵌套的时候再写
+                elif root in self.zi:
+                    pass

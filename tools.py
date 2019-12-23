@@ -1,12 +1,11 @@
 import yaml
 
-def loadYAML(name, dir=''):
+def loadYAML(path):
     """
     功能：.yaml 数据加载
-    输入：文件夹 dir, 主名 name
+    输入：路径 path
     输出：yaml 解析器加载后的数据
     """
-    path = '{0}{1}.yaml'.format(dir, name)
     try:
         return yaml.load(open(path, encoding='utf-8'), Loader=yaml.BaseLoader)
     except FileNotFoundError:
