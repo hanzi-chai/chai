@@ -11,24 +11,10 @@ schema:
     本输入方案为纯单字顶功方案，采用一码顶格式。
     (a ab abb abbb abbb0)
 
-engine:
-  - degenerator
-  - evaluator
-  - aliaser
-  - selector
-  - encoder
-
 degenerator:
-
-evaluator:
-  - 根少优先
-  - 能连不交
-  - 能散不连
-  - 取大优先
-
-aliaser:
-  alias: wubi98
+  - 笔画列表
+  - 笔画拓扑
 
 selector:
-
-encoder:
+  - 笔顺优先
+  - 取大优先

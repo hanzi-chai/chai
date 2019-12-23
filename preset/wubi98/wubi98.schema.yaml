@@ -1,4 +1,4 @@
-# Chai 配置文件：五笔字型 98 版
+﻿# Chai 配置文件：五笔字型 98 版
 
 schema:
   name: 五笔字型 98 版
@@ -17,16 +17,15 @@ engine:
   - encoder
 
 degenerator:
+  - 笔画列表
+  - 笔画拓扑
 
-evaluator:
+selector:
   - 根少优先
-  - 能连不交
-  - 能散不连
+  - 笔顺优先
   - 取大优先
 
 aliaser:
   alias: wubi98
-
-selector:
 
 encoder:
