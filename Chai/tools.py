@@ -1,15 +1,21 @@
 import yaml
+import pkgutil
 
-def loadYAML(path):
+def load(path):
     """
-    功能：.yaml 数据加载
+    功能：从当前工作目录中加载 YAML 数据库
     输入：路径 path
     输出：yaml 解析器加载后的数据
     """
-    try:
-        return yaml.load(open(path, encoding='utf-8'), Loader=yaml.BaseLoader)
-    except FileNotFoundError:
-        raise ValueError('您所指定的方案文件「%s」不存在' % path)
+    return yaml.load(open(path, encoding='utf-8'), Loader=yaml.BaseLoader)
+
+def loadFromPackage(path):
+    """
+    功能：从模块包中加载 YAML 数据库
+    输入：路径 path
+    输出：yaml 解析器加载后的数据
+    """
+    return yaml.load(pkgutil.get_data(__package__, path).decode(), Loader=yaml.BaseLoader)
 
 def checkCompleteness(strokeDict):
     """
@@ -22,7 +28,8 @@ def checkCompleteness(strokeDict):
         '横钩', '横撇', '横折', '横折钩', '横斜钩', '横折提', '横折折',
         '横折弯', '横撇弯钩', '横折弯钩', '横折折撇', '横折折折', '横折折折钩',
         '竖提', '竖折', '竖弯', '竖弯钩', '竖折撇', '竖折折钩', '竖折折',
-        '撇点', '撇折', '弯钩', '斜钩']
+        '撇点', '撇折', '弯钩', '斜钩'
+        ]
     strokeCategory = {}
     # 读取用户对笔画的大类进行的自定义
     for category, strokeTypeList in strokeDict.items():
