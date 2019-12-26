@@ -19,7 +19,7 @@ class Schema:
         """
         self.name = schemaName
         self.__fieldDict = {
-            '笔画列表': getStrokeList,
+            '笔画序列': getStrokeList,
             '笔画拓扑': getTopoList
         } 
         self.__sieveDict = {
@@ -29,7 +29,7 @@ class Schema:
         }
         self.wen = loadFromPackage('文.yaml') # 文数据库，即基础字根
         self.zi = loadFromPackage('字.yaml') # 字数据库，即嵌套表
-        self.yuan = loadFromPackage('元.yaml') # 元数据库，即预置字根
+        # self.yuan = loadFromPackage('元.yaml') # 元数据库，即预置字根
         self.tree = {}
         for nameChar, expression in self.zi.items():
             tree = Tree(nameChar, expression, self.zi)
@@ -38,10 +38,10 @@ class Schema:
         self.charList = sorted(filter(lambda x: len(x) == 1, allKeys), key = ord)
         self.encoder = {}
         try:
-            self.schema = load('%s.schema.yaml' % self.name)
+            self.schema = load('%s.schema.yaml' % self.name, withNumbers=False)
         except FileNotFoundError:
             try:
-                self.schema = loadFromPackage('preset/%s.schema.yaml' % self.name)
+                self.schema = loadFromPackage('preset/%s.schema.yaml' % self.name, withNumbers=False)
             except FileNotFoundError:
                 raise ValueError('您所指定的方案文件「%s.schema.yaml」不存在' % self.name)
         if 'alias' not in self.schema: self.schema['alias'] = {}
@@ -68,7 +68,7 @@ class Schema:
                 if root in self.schema['stroke']:
                     for strokeType in self.schema['stroke'][root]:
                         self.rootSet[strokeType] = key
-                        self.degeneracy[strokeType] = strokeType
+                        self.degeneracy[strokeType] = Char(strokeType, [Stroke([strokeType, None])])
                 # 字根是「文」数据中的一个部件
                 elif root in self.wen:
                     strokeList = [Stroke(stroke)
@@ -76,7 +76,9 @@ class Schema:
                     objectChar = Char(root, strokeList)
                     self.rootSet[root] = key
                     characteristicString = self.degenerator(objectChar)
-                    self.degeneracy[characteristicString] = objectChar.name
+                    # self.degeneracy[characteristicString] = objectChar.name
+                    # 本来以为只需要放一个名义字，但取末笔的时候要用到，故改为对象字
+                    self.degeneracy[characteristicString] = objectChar
                 # 字根不是「文」数据库中的部件，但用户定义了它
                 elif root in self.schema['alias']:
                     source, indexer = self.schema['alias'][root]
@@ -85,10 +87,11 @@ class Schema:
                     objectChar = Char(root, strokeList)
                     self.rootSet[root] = key
                     characteristicString = self.degenerator(objectChar)
-                    self.degeneracy[characteristicString] = objectChar.name
+                    # self.degeneracy[characteristicString] = objectChar.name
+                    self.degeneracy[characteristicString] = objectChar
                 # 这种情况对应着合体字根，暂不考虑，等写嵌套的时候再写
-                elif root in self.zi:
-                    pass
+                else:
+                    self.rootSet[root] = key
 
     def setField(self, fieldName, field):
         self.__fieldDict[fieldName] = field
@@ -167,12 +170,14 @@ class Schema:
             objectChar.schemeList = list(filter(selectBoolean, objectChar.schemeList))
         # 理论上经过选择器序贯处理后应该只剩下一个 scheme。如果不是这样，报错
         if len(objectChar.schemeList) == 1:
-            return tuple(
-                {
-                'name': objectChar.powerDict[x], 
-                'slice': x
-                }
-                for x in objectChar.schemeList[0])
+            # 理论上把字根的二进制表示放进去才完备，但除了 C 输入要用到之外都不用，先不写
+            # return tuple(
+            #     {
+            #     'name': objectChar.powerDict[x], 
+            #     'slice': x
+            #     }
+            #     for x in objectChar.schemeList[0])
+            return tuple(objectChar.powerDict[x] for x in objectChar.schemeList[0])
         else:
             raise ValueError('您提供的拆分规则不能唯一确定拆分结果。例如，字「%s」有如下拆分方式：%s' % (objectChar.name, objectChar.schemeList))
 
@@ -192,6 +197,10 @@ class Schema:
         self.gpdTime = 0
         self.decTime = 0
         self.selTime = 0
+        self.category = {}
+        for category, strokeTypeList in self.schema['stroke'].items():
+            for strokeType in strokeTypeList:
+                self.category[strokeType] = category
         for nameChar in self.wen:
             strokeList = [Stroke(stroke) for stroke in self.wen[nameChar]]
             objectChar = Char(nameChar, strokeList)
@@ -278,7 +287,7 @@ class Erbi(Schema):
                     objectChar = Char(root, strokeList)
                     self.rootSet[root] = key
                     characteristicString = self.degenerator(objectChar)
-                    self.degeneracy[characteristicString] = objectChar.name
+                    self.degeneracy[characteristicString] = objectChar
                 # 字根不是「文」数据库中的部件，但用户定义了它
                 elif root in self.schema['alias']:
                     source, indexer = self.schema['alias'][root]
@@ -287,7 +296,7 @@ class Erbi(Schema):
                     objectChar = Char(root, strokeList)
                     self.rootSet[root] = key
                     characteristicString = self.degenerator(objectChar)
-                    self.degeneracy[characteristicString] = objectChar.name
+                    self.degeneracy[characteristicString] = objectChar
                 # 这种情况对应着合体字根，暂不考虑，等写嵌套的时候再写
                 elif root in self.zi:
                     pass

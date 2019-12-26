@@ -1,5 +1,6 @@
 from Chai import Erbi
 
+# 方案未完成！请先不要运行该文件。
 xiaoqing = Erbi('xiaoqing')
 xiaoqing.run()
 

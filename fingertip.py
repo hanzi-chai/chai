@@ -33,7 +33,7 @@ for nameChar in fingertip.charList:
                 fingertip.component[second.second.veryFirst()][:1]
     if len(scheme) < 4: # 末码补全
         scheme = (scheme + (scheme[-1:] * 3))[:4]
-    code = ''.join(fingertip.rootSet[root['name']] for root in scheme)
+    code = ''.join(fingertip.rootSet[objectRoot.name] for objectRoot in scheme)
     fingertip.encoder[nameChar] = code
 
 fingertip.output()

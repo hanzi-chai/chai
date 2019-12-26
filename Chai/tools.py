@@ -1,21 +1,21 @@
 import yaml
 import pkgutil
 
-def load(path):
+def load(path, withNumbers=True):
     """
     功能：从当前工作目录中加载 YAML 数据库
     输入：路径 path
     输出：yaml 解析器加载后的数据
     """
-    return yaml.load(open(path, encoding='utf-8'), Loader=yaml.BaseLoader)
+    return yaml.load(open(path, encoding='utf-8'), Loader=yaml.SafeLoader if withNumbers else yaml.BaseLoader)
 
-def loadFromPackage(path):
+def loadFromPackage(path, withNumbers=True):
     """
     功能：从模块包中加载 YAML 数据库
     输入：路径 path
     输出：yaml 解析器加载后的数据
     """
-    return yaml.load(pkgutil.get_data(__package__, path).decode(), Loader=yaml.BaseLoader)
+    return yaml.load(pkgutil.get_data(__package__, path).decode(), Loader=yaml.SafeLoader if withNumbers else yaml.BaseLoader)
 
 def checkCompleteness(strokeDict):
     """
@@ -45,17 +45,17 @@ def expand(indexList):
     输入：笔画索引列 indexList
     输入：展开后的笔画索引列 returnList ，形如 [1, 2, 3, 4, 5, 6]
     """
-    if '...' not in indexList:
-        returnList = list(map(int, indexList))
-    else:
+    if '...' in indexList:
         splitList = [list(map(int, x.split(' ')))
-                     for x in (' '.join(indexList)).split(' ... ')]
+                     for x in (' '.join(map(str, indexList))).split(' ... ')]
         returnList = splitList[0]
         for n in range(len(splitList) - 1):
             startNum = splitList[n][-1]
             stopNum = splitList[n+1][0]
             returnList.extend(list(range(startNum + 1, stopNum)))
             returnList.extend(splitList[n+1])
+    else:
+        returnList = list(map(int, indexList))
     return returnList
 
 def nextRoot(n):

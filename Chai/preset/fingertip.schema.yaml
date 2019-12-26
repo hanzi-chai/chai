@@ -12,7 +12,7 @@ schema:
     (a ab abb abbb abbb0)
 
 degenerator:
-  - 笔画列表
+  - 笔画序列
   - 笔画拓扑
 
 selector:

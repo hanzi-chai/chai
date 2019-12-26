@@ -1,3 +1,5 @@
+from .topology import topology
+
 # 预置退化映射组件
 
 def getStrokeList(objectChar):
@@ -10,11 +12,11 @@ def getStrokeList(objectChar):
 
 def getTopoList(objectChar):
     """
-    功能：退化函数组件，提取出一个对象字的笔画序列
+    功能：退化函数组件，提取出一个对象字的拓扑
     输入：对象字
-    输出：待定
+    输出：一个 n(n-1)/2 长度的字符串，n 为笔段个数
     """
-    return ''
+    return topology(objectChar)
 
 # 预置择优函数组件
 
