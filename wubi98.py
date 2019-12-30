@@ -8,7 +8,7 @@ for nameChar in wubi98.charList:
         scheme = wubi98.component[nameChar]
     else:
         tree = wubi98.tree[nameChar]
-        componentList = tree.flatten()
+        componentList = tree.flatten_with_complex(wubi98.complexRootList)
         scheme = sum((wubi98.component[component] for component in componentList), tuple())
     if len(scheme) == 1:
         objectRoot = scheme[0]
@@ -23,8 +23,11 @@ for nameChar in wubi98.charList:
         else:
             firstStroke = objectRoot.strokeList[0].type
             secondStroke = objectRoot.strokeList[1].type
-            lastStroke = objectRoot.strokeList[-1].type
-            info = [nameRoot, firstStroke, secondStroke, lastStroke]
+            if objectRoot.charlen == 2:
+                info = [nameRoot, firstStroke, secondStroke]
+            else:
+                lastStroke = objectRoot.strokeList[-1].type
+                info = [nameRoot, firstStroke, secondStroke, lastStroke]
     elif len(scheme) < 4:
         if nameChar in wubi98.component or tree.structure not in 'hz':
             weima = '3'
