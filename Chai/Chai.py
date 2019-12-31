@@ -48,7 +48,7 @@ class Schema:
                 self.schema = loadFromPackage('preset/%s.schema.yaml' % self.name, withNumbers=False)
             except FileNotFoundError:
                 raise ValueError('您所指定的方案文件「%s.schema.yaml」不存在' % self.name)
-        if 'alias' not in self.schema: self.schema['alias'] = {}
+        if 'aliaser' not in self.schema: self.schema['aliaser'] = {}
         self.parseSchema()
     
     def parseSchema(self):
@@ -58,21 +58,21 @@ class Schema:
         输出：用户字根索引字典 degeneracy 、键位索引字典 rootSet
         """
         # 检查笔画定义是否完整
-        lostStrokes = checkCompleteness(self.schema['stroke'])
+        lostStrokes = checkCompleteness(self.schema['classifier'])
         if lostStrokes: # 若有缺失定义，发起错误
             raise ValueError('未定义的笔画：%s' % str(lostStrokes))
-        for component in self.schema['alias']:
-            indexList = self.schema['alias'][component][1]
-            self.schema['alias'][component][1] = expand(indexList) # 展开省略式
+        for component in self.schema['aliaser']:
+            indexList = self.schema['aliaser'][component][1]
+            self.schema['aliaser'][component][1] = expand(indexList) # 展开省略式
         self.rootSet = {} # 字根名到键位的映射，用于取码时键位索引
         self.degeneracy = {} # 退化字根到字根的映射，用于构建powerDict
-        allRoots = sum([list(x) for x in self.schema['map'].values()], [])
+        allRoots = sum([list(x) for x in self.schema['mapper'].values()], [])
         self.diff_kou_wei = True if '口' in allRoots and '囗' in allRoots else False
-        for key, rootList in self.schema['map'].items():
+        for key, rootList in self.schema['mapper'].items():
             for root in rootList:
                 # 是单笔画字根
-                if root in self.schema['stroke']:
-                    for strokeType in self.schema['stroke'][root]:
+                if root in self.schema['classifier']:
+                    for strokeType in self.schema['classifier'][root]:
                         self.rootSet[strokeType] = key
                         self.degeneracy[strokeType] = Char(strokeType, [Stroke([strokeType, None])])
                 # 字根是「文」数据中的一个部件
@@ -91,8 +91,8 @@ class Schema:
                     if characteristicString in self.degeneracy: print(root, self.degeneracy[characteristicString].name)
                     self.degeneracy[characteristicString] = objectChar
                 # 字根不是「文」数据库中的部件，但用户定义了它
-                elif root in self.schema['alias']:
-                    source, indexer = self.schema['alias'][root]
+                elif root in self.schema['aliaser']:
+                    source, indexer = self.schema['aliaser'][root]
                     l = len(self.wen[source])
                     sliceNum = sum(1 << (l - int(index) - 1) for n, index in enumerate(indexer))
                     strokeList = [Stroke(self.wen[source][int(index)])
@@ -226,7 +226,7 @@ class Schema:
         self.decTime = 0
         self.selTime = 0
         self.category = {}
-        for category, strokeTypeList in self.schema['stroke'].items():
+        for category, strokeTypeList in self.schema['classifier'].items():
             for strokeType in strokeTypeList:
                 self.category[strokeType] = category
         for complexRoot in self.complexRootList:
@@ -281,7 +281,7 @@ class Erbi(Schema):
     
     def run(self):
         self.category = {}
-        for category, strokeTypeList in self.schema['stroke'].items():
+        for category, strokeTypeList in self.schema['classifier'].items():
             for strokeType in strokeTypeList:
                 self.category[strokeType] = category
         self.component = {}
@@ -303,20 +303,20 @@ class Erbi(Schema):
         输出：用户字根索引字典 degeneracy 、键位索引字典 rootSet
         """
         # 检查笔画定义是否完整
-        lostStrokes = checkCompleteness(self.schema['stroke'])
+        lostStrokes = checkCompleteness(self.schema['classifier'])
         if lostStrokes: # 若有缺失定义，发起错误
             raise ValueError('未定义的笔画：%s' % str(lostStrokes))
-        for component in self.schema['alias']:
-            indexList = self.schema['alias'][component][1]
-            self.schema['alias'][component][1] = expand(indexList) # 展开省略式
+        for component in self.schema['aliaser']:
+            indexList = self.schema['aliaser'][component][1]
+            self.schema['aliaser'][component][1] = expand(indexList) # 展开省略式
         self.rootSet = {} # 字根名到键位的映射，用于取码时键位索引
         self.degeneracy = {} # 退化字根到字根的映射，用于构建powerDict
-        for key, rootList in self.schema['map'].items():
+        for key, rootList in self.schema['mapper'].items():
             for root in rootList:
-                if root in self.schema['stroke']:
+                if root in self.schema['classifier']:
                     # 是单笔画字根
                     self.rootSet[root] = key
-                elif len(root) == 2 and root[0] in self.schema['stroke'] and root[1] in self.schema['stroke']:
+                elif len(root) == 2 and root[0] in self.schema['classifier'] and root[1] in self.schema['classifier']:
                     # 是双笔画字根
                     self.rootSet[root] = key
                 # 字根是「文」数据中的一个部件
@@ -329,8 +329,8 @@ class Erbi(Schema):
                     if characteristicString in self.degeneracy: print(root, self.degeneracy[characteristicString].name)
                     self.degeneracy[characteristicString] = objectChar
                 # 字根不是「文」数据库中的部件，但用户定义了它
-                elif root in self.schema['alias']:
-                    source, indexer = self.schema['alias'][root]
+                elif root in self.schema['aliaser']:
+                    source, indexer = self.schema['aliaser'][root]
                     l = len(self.wen[source])
                     sliceNum = sum(1 << (l - n - 1) for n, index in enumerate(indexer))
                     strokeList = [Stroke(self.wen[source][int(index)])
