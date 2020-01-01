@@ -2,7 +2,7 @@
 
 import yaml, pkgutil
 
-topology = yaml.load(pkgutil.get_data(__package__, '文.topo.yaml'), Loader=yaml.BaseLoader)
+topology = yaml.load(pkgutil.get_data(__package__, 'topology.yaml'), Loader=yaml.BaseLoader)
 
 # 预置退化映射组件
 

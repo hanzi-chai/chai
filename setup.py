@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="pychai",
-    version="1.0",
+    version="1.0.1",
     author="Luoxiao Lan",
     author_email="2320693692@qq.com",
     description="A System for Automatic Chinese Character Decomposition",

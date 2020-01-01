@@ -5,10 +5,10 @@ pychai/objects.py
 pychai/presets.py
 pychai/pychai.py
 pychai/tools.py
+pychai/topology.yaml
 pychai/ui.py
-pychai/字.yaml
-pychai/文.topo.yaml
-pychai/文.yaml
+pychai/wen.yaml
+pychai/zi.yaml
 pychai.egg-info/PKG-INFO
 pychai.egg-info/SOURCES.txt
 pychai.egg-info/dependency_links.txt

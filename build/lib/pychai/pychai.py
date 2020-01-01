@@ -29,8 +29,8 @@ class Schema:
             '能连不交、能散不连': schemeTopo,
             '取大优先': schemeBias
         }
-        self.wen = loadFromPackage('文.yaml') # 文数据库，即基础字根
-        self.zi = loadFromPackage('字.yaml') # 字数据库，即嵌套表
+        self.wen = loadFromPackage('wen.yaml') # 文数据库，即基础字根
+        self.zi = loadFromPackage('zi.yaml') # 字数据库，即嵌套表
         # self.zi = {}
         # self.yuan = loadFromPackage('元.yaml') # 元数据库，即预置字根
         self.tree = {}
