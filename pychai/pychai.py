@@ -88,7 +88,6 @@ class Schema:
                     if root in '口囗' and self.diff_kou_wei:
                         self.kou_wei_cs = characteristicString
                         characteristicString += root
-                    if characteristicString in self.degeneracy: print(root, self.degeneracy[characteristicString].name)
                     self.degeneracy[characteristicString] = objectChar
                 # 字根不是「文」数据库中的部件，但用户定义了它
                 elif root in self.schema['aliaser']:
@@ -100,7 +99,6 @@ class Schema:
                     objectChar = Char(root, strokeList, sourceName=source, sourceSlice=sliceNum)
                     self.rootSet[root] = key
                     characteristicString = self.degenerator(objectChar)
-                    # if characteristicString in self.degeneracy: print(root, self.degeneracy[characteristicString].name)
                     self.degeneracy[characteristicString] = objectChar
                 # 这种情况对应着合体字根，暂不考虑，等写嵌套的时候再写
                 elif root in self.zi:
@@ -141,11 +139,7 @@ class Schema:
                     characteristicString += '囗'
                 else:
                     characteristicString += '口'
-            if objectChar.name == '贝': print(characteristicString, self.kou_wei_cs)
             objectChar.powerDict[k] = self.degeneracy.get(characteristicString)
-        if objectChar.name == '贝': 
-            for k, v in objectChar.powerDict.items():
-                print(k, v.name if v else '')
 
     def genSchemeList(self, objectChar):
         """
@@ -326,7 +320,6 @@ class Erbi(Schema):
                     objectChar = Char(root, strokeList)
                     self.rootSet[root] = key
                     characteristicString = self.degenerator(objectChar)
-                    if characteristicString in self.degeneracy: print(root, self.degeneracy[characteristicString].name)
                     self.degeneracy[characteristicString] = objectChar
                 # 字根不是「文」数据库中的部件，但用户定义了它
                 elif root in self.schema['aliaser']:
@@ -338,7 +331,6 @@ class Erbi(Schema):
                     objectChar = Char(root, strokeList, sourceName=source, sourceSlice=sliceNum)
                     self.rootSet[root] = key
                     characteristicString = self.degenerator(objectChar)
-                    if characteristicString in self.degeneracy: print(root, self.degeneracy[characteristicString].name)
                     self.degeneracy[characteristicString] = objectChar
                 # 这种情况对应着合体字根，暂不考虑，等写嵌套的时候再写
                 elif root in self.zi:

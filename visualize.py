@@ -48,7 +48,7 @@ class SVG:
 
 if __name__ == "__main__":
     nameChar = '以'
-    WEN = yaml.load(open('Chai/文.yaml'), Loader=yaml.SafeLoader)
+    WEN = yaml.load(open('pychai/文.yaml'), Loader=yaml.SafeLoader)
     strokeList = WEN[nameChar]
     svg = SVG(nameChar, strokeList)
     svg.output()
