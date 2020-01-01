@@ -27,10 +27,12 @@ class Char():
       - 笔画列表，每个元素是一个 Stroke 对象
     """
     
-    def __init__(self, nameChar, strokeList):
+    def __init__(self, nameChar, strokeList, sourceName=None, sourceSlice=None):
         self.name = nameChar
         self.strokeList = strokeList
         self.charlen = len(strokeList)
+        self.sourceName = sourceName
+        self.sourceSlice = sourceSlice
     
     def __str__(self):
         strokeList = [str(stroke) for stroke in self.strokeList]
@@ -78,6 +80,21 @@ class Tree():
         while stack:
             node = stack.pop()
             if node.first == None:
+                componentList.append(node.name)
+            else:
+                stack.extend([node.second, node.first])
+        return componentList
+
+    def flatten_with_complex(self, complexRootList):
+        """
+        输入：树
+        输出：将所有嵌套列表展开，并删去结构操作符，但保留合体字根！
+        """
+        stack = [self]
+        componentList = []
+        while stack:
+            node = stack.pop()
+            if node.first == None or node.name in complexRootList:
                 componentList.append(node.name)
             else:
                 stack.extend([node.second, node.first])
