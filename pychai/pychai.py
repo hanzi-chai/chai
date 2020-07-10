@@ -4,7 +4,7 @@ from .objects import *
 import time
 
 class Schema:
-    
+
     """
     方案对象：
         - 「文」数据：含控制点笔画列的基础字根
@@ -12,7 +12,7 @@ class Schema:
         - 用户定义方案
         - 解析函数
     """
-    
+
     def __init__(self, schemaName):
         """
         功能：加载基础数据，并加载用户方案（暂定）
@@ -50,7 +50,7 @@ class Schema:
                 raise ValueError('您所指定的方案文件「%s.schema.yaml」不存在' % self.name)
         if 'aliaser' not in self.schema: self.schema['aliaser'] = {}
         self.parseSchema()
-    
+
     def parseSchema(self):
         """
         功能：解析出退化的用户字根，建立退化字根到字根的字典、字根到键位的字典
@@ -109,10 +109,10 @@ class Schema:
 
     def setField(self, fieldName, field):
         self.__fieldDict[fieldName] = field
-    
+
     def setSieve(self, sieveName, sieve):
         self.__sieveDict[sieveName] = sieve
-    
+
     def genPowerDict(self, objectChar):
         """
         功能：解析出基础字的所有有效切片，构造切片到用户字根的字典 powerDict
@@ -170,7 +170,7 @@ class Schema:
 
     def genBestScheme(self, objectChar):
         objectChar.bestScheme = self.selector(objectChar)
-    
+
     def degenerator(self, objectChar):
         characteristicString = ''
         if objectChar.charlen > 1:
@@ -252,7 +252,7 @@ class Schema:
             self.gpdTime += time1 - time0
             self.decTime += time2 - time1
             self.selTime += time3 - time2
-    
+
     def output(self, directory=''):
         with open('%s%s.dict.yaml' % (directory, self.name), 'w', encoding='utf-8') as f: # 写进文件
             f.write('# Chai dictionary: %s\n\n---\nname: %s\n' % (self.name, self.name))
@@ -272,7 +272,7 @@ class Erbi(Schema):
             characteristicString = self.degenerator(Char('', objectChar.strokeList[:k], sourceName=objectChar.name, sourceSlice=((1 << k)-1)))
             if self.degeneracy.get(characteristicString):
                 objectChar.root = self.degeneracy.get(characteristicString)
-    
+
     def run(self):
         self.category = {}
         for category, strokeTypeList in self.schema['classifier'].items():

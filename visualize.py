@@ -32,7 +32,7 @@ class SVG:
         返回svg标签的字根，用于内嵌于html中。
         """
         return "<svg xmlns='http://www.w3.org/2000/svg' version='1.1' width='1000px' height='1000px'>\n%s\n</svg>" % self.convert_path_label()
-    
+
     def output(self, path:str = None):
         """
         将svg文件保存为指定的本地文件。

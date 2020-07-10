@@ -1,5 +1,5 @@
 class Stroke():
-    
+
     """
     笔画对象：
       - 类别（31 种）
@@ -9,31 +9,31 @@ class Stroke():
         https://github.com/lanluoxiao/Chai/wiki/1-%E3%80%8C%E6%96%87%E3%80% \
         8D%E6%95%B0%E6%8D%AE%E5%BA%93%E5%BC%80%E5%8F%91%E8%A7%84%E8%8C%83。
     """
-    
+
     def __init__(self, obj):
         self.type = obj[0]
         self.start = obj[1]
         self.drawList = obj[2:]
-    
+
     def __str__(self):
         return str(self.type) + ':' + str(self.drawList) + ' '
 
 
 class Char():
-    
+
     """
     汉字对象（对象字 objectChar）：
       - 名称（名义字 nameChar）
       - 笔画列表，每个元素是一个 Stroke 对象
     """
-    
+
     def __init__(self, nameChar, strokeList, sourceName=None, sourceSlice=None):
         self.name = nameChar
         self.strokeList = strokeList
         self.charlen = len(strokeList)
         self.sourceName = sourceName
         self.sourceSlice = sourceSlice
-    
+
     def __str__(self):
         strokeList = [str(stroke) for stroke in self.strokeList]
         return self.name + '{\n\t' + '\n\t'.join(strokeList) + '\n\t}'
@@ -107,12 +107,12 @@ class Tree():
         while node.first:
             node = node.first
         return node.name
-    
+
     def verySecond(self):
         node = self
         while node.second:
             node = node.second
         return node.name
-    
+
     def divisible(self):
         return bool(self.first)

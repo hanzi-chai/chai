@@ -20,7 +20,7 @@ strokeSimplify = {
     '横折钩': '横折',
     '提': '横',
     '捺': '点',
-    
+
 }
 
 def getStrokeListSimplified(objectChar):
