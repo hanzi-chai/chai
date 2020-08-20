@@ -343,7 +343,7 @@ def genDegeneracy(rootSet):
     for objectRoot in rootSet:
         characteristicString = degenerator(objectRoot) # 退化用户字根的对象字
         degeneracy[characteristicString] = objectChar # 写入退化字典
-    return degeneracy        
+    return degeneracy
 ```
 
 ## 3 幂字典生成
