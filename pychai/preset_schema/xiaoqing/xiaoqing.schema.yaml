@@ -1,6 +1,7 @@
 # Chai schema: xiaoqing
 
 schema:
+  schema_id: xiaoqing
   name: 小轻二笔
   version: "0.1"
   author:

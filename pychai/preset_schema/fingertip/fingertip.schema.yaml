@@ -1,6 +1,7 @@
 # Chai schema: 指尖一码顶
 
 schema:
+  schema_id: fingertip
   name: 指尖一码顶
   version: "0.1"
   author:

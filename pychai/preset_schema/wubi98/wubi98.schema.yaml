@@ -1,6 +1,7 @@
 ﻿# Chai 配置文件：五笔字型 98 版
 
 schema:
+  schema_id: wubi98
   name: 五笔字型 98 版
   version: "0.1"
   author:
