@@ -1,6 +1,4 @@
-"""
-「文」数据：含控制点笔画列的基础字根，
-「字」数据：含嵌套结构的字，
-「拓扑」数据：含「文」中基础字根笔画的交连关系
-"""
-from .data import WEN,ZI,TOPOLOGY
+from .data_loader import load,loadFromPackage
+WEN = loadFromPackage('wen.yaml')
+ZI = loadFromPackage('zi.yaml')
+TOPOLOGY = loadFromPackage('topology.yaml', withNumbers=False)

@@ -1,5 +1,7 @@
+from pychai.classes import Char
+from pychai.data import TOPOLOGY
 """预置择优函数组件"""
-def schemeBias(objectChar, scheme):
+def schemeBias(char: Char, scheme):
     """
     功能：拆分估值器，按拆分中偏置程度估值，前端切片笔画数越多，值越大
     输入：拆分，字对象
@@ -9,7 +11,7 @@ def schemeBias(objectChar, scheme):
                         for index, part in enumerate(scheme))
     return schemeEval
 
-def schemeLen(objectChar, scheme):
+def schemeLen(char: Char, scheme):
     """
     功能：拆分估值器，按拆分中切片多少进行估值
     输入：拆分
@@ -17,26 +19,26 @@ def schemeLen(objectChar, scheme):
     """
     return len(scheme)
 
-def schemeOrder(objectChar, scheme):
+def schemeOrder(char: Char, scheme):
     """
     功能：拆分估值器，按拆分中切片符合笔顺程度进行估值，越符合，值越小
     输入：拆分，字对象（参数需求：笔画数）
     输出：拆分估值
     """
-    l = objectChar.charlen
+    l = len(char.strokeList)
     mx = 1 << l
     schemeEval = sum((tuple(k for k in range(l) if (mx >> (k + 1)) & part) for part in scheme), tuple())
     return schemeEval
 
-def schemeTopo(objectChar, scheme):
+def schemeTopo(char: Char, scheme):
     """
     功能：估值器，按拆分中各切片的关系估值
     """
     lianFlag = False
     jiaoFlag = False
-    l = objectChar.charlen
+    l = len(char.strokeList)
     ll = 1 << l
-    topoList = TOPOLOGY[objectChar.name]
+    topoList = TOPOLOGY[char.name]
     schemeParsed = [tuple(k for k in range(l) if (ll >> (k + 1)) & num) for num in scheme]
     for n, strokeList in enumerate(schemeParsed):
         for n_, strokeList_ in enumerate(schemeParsed):

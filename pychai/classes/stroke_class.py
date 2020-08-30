@@ -1,5 +1,3 @@
-from typing import Sequence
-from .typings import StrokeType
 class Stroke():
     """
     笔画对象：
@@ -11,8 +9,8 @@ class Stroke():
         8D%E6%95%B0%E6%8D%AE%E5%BA%93%E5%BC%80%E5%8F%91%E8%A7%84%E8%8C%83。
     """
 
-    def __init__(self, obj):
-        self.type: StrokeType = obj[0]
+    def __init__(self, obj: list):
+        self.type = obj[0]
         self.start = obj[1]
         self.drawList = obj[2:]
 

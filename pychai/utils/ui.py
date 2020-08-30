@@ -1,5 +1,4 @@
-from .tools import loadFromPackage
-from pychai.classes import Tree
+from pychai.data import loadFromPackage, WEN, ZI
 import shutil
 import os
 
