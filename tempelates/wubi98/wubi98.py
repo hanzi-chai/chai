@@ -39,9 +39,9 @@ class Wubi(ChaiClassical):
             if (not char.struct) or char.struct not in 'hz':
                 structTypeNum = 2   # 杂合型
             elif char.struct == 'h':
-                structTypeNum = 1   # 左右型
+                structTypeNum = 0   # 左右型
             else:
-                structTypeNum = 0   # 上下型
+                structTypeNum = 1   # 上下型
             # 最后一笔的笔划号「12345」对应「横竖撇点折」
             lastStrokeTypeNum = self.storkeClassifier[char.strokeList[-1].type]
             keycode += structKeyRef[structTypeNum][lastStrokeTypeNum-1]

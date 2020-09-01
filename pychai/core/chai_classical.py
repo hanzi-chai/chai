@@ -95,21 +95,23 @@ class ChaiClassical(ChaiAbstract):
         if unitChar.name in self.rootKeymap:
             unitChar.scheme = [unitChar]
         else:
-            time0 = time.perf_counter()
+            time0 = time.time()
             self.__genPowerDict(unitChar)
-            time1 = time.perf_counter()
+            time1 = time.time()
             self.__genSchemeList(unitChar)
-            time2 = time.perf_counter()
+            time2 = time.time()
             self.selector(unitChar)
-            time3 = time.perf_counter()
+            time3 = time.time()
             self.gpdTime += time1 - time0
             self.decTime += time2 - time1
             self.selTime += time3 - time2
 
     def genScheme(self) -> None:
         super().genScheme()
-        print("取幂集耗时：%.2f，拆分字根耗时：%.2f，择优耗时：%.2f" \
-            % (self.gpdTime, self.decTime, self.selTime))
+        print("取幂集耗时：%dms，拆分字根耗时：%dms，择优耗时：%dms" \
+            % (int(self.gpdTime * 1000),
+                int(self.decTime * 1000),
+                int(self.selTime * 1000)))
 
     # def run(self):
     #     """

@@ -8,7 +8,7 @@ import time
 class ChaiAbstract():
     def __init__(self, schemaName: str, path: str=''):
         print("初始化拆分对象...")
-        start = time.perf_counter()
+        start = time.time()
         self.charDict = build_objChar_dict(WEN,ZI)
         schemaData = loadSchemaData(schemaName,path)
         self.schemaInfo: dict = schemaData['schema']
@@ -21,8 +21,8 @@ class ChaiAbstract():
             self.charDict.keys()), key = ord)
         self.schemaResultDict: Optional[Dict[str, str]] = None
         self.keycodeResultDict: Optional[Dict[str, str]] = None
-        elapsed = time.perf_counter() - start
-        print("初始化完毕。耗时：%.2f秒。" % elapsed)
+        elapsed = time.time() - start
+        print("初始化完毕。耗时：%dms。" % int(elapsed * 1000))
 
     @abc.abstractmethod
     def genSchemeUnitChar(self, unitChar: UnitChar) -> None:
@@ -69,7 +69,7 @@ class ChaiAbstract():
 
     def genScheme(self) -> None:
         print("开始拆分...")
-        start = time.perf_counter()
+        start = time.time()
         if not self.schemaResultDict:
             self.schemaResultDict = {}
         for charName in self.filteredCharNameList:
@@ -77,20 +77,20 @@ class ChaiAbstract():
             self.genSchemeChar(char)
             self.schemaResultDict[charName] = ''.join([unitChar.name \
                 for unitChar in char.scheme])
-        elapsed = time.perf_counter() - start
-        print("拆分完成。耗时：%.2f秒。" % elapsed)
+        elapsed = time.time() - start
+        print("拆分完成。耗时：%dms。" % int(elapsed * 1000))
 
     def encode(self) -> None:
         print("开始编码...")
-        start = time.perf_counter()
+        start = time.time()
         if not self.keycodeResultDict:
             self.keycodeResultDict = {}
         for charName in self.filteredCharNameList:
             objChar = self.charDict[charName]
             self.encodeChar(objChar)
             self.keycodeResultDict[charName] = objChar.keycode
-        elapsed = time.perf_counter() - start
-        print("编码完成。耗时：%.2f秒。" % elapsed)
+        elapsed = time.time() - start
+        print("编码完成。耗时：%dms。" % int(elapsed * 1000))
 
     def output(self, directory='', outputSchemaResult=False) -> None:
         schemaId = self.schemaInfo['schema_id']
