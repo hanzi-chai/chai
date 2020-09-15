@@ -1,7 +1,7 @@
 from .chai_abstract import ChaiAbstract
 
+# TODO: 未适配新工程结构
 class ChaiErbi(ChaiAbstract):
-    # TODO: 根据抽象类结构修改Erbi
     def genRoot(self, objectChar):
         """
         功能：二笔的 powerDict 只含顺序取笔

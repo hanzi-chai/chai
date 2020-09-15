@@ -1,4 +1,5 @@
 from .. import ChaiClassical, Char, UnitChar
+from ..data import WEN
 
 class Wubi(ChaiClassical):
     def encodeChar(self, char: Char) -> None:
@@ -53,40 +54,48 @@ class Wubi(ChaiClassical):
             char.keycode = keycode
 
 wubi98 = Wubi('wubi98', 'pychai/test/')
+wubi98.filteredCharNameList = WEN.keys()
 wubi98.genScheme()
-char = wubi98.charDict['不']
-print([uc.name for uc in char.scheme])
-print(wubi98.rootKeymap['石上'])
-# wubi98.encode()
+# char = wubi98.charDict['不']
+# print([uc.name for uc in char.scheme])
+# print(wubi98.rootKeymap['石上'])
+wubi98.encode()
 # wubi98.output()
 
-# originalDict={}
-# with open("pychai/test/wubi98.dict-original.txt",mode="r",encoding="utf-8") as file:
-#     for line in file:
-#         char,code=line.strip('\n').split('\t')
-#         originalDict[char]=code
-# def scheme_toStrList(list_):
-#     return ["{%s}" % unitChar.name for unitChar in list_]
+originalDict={}
+with open("pychai/test/wubi98.dict-original.txt",mode="r",encoding="utf-8") as file:
+    for line in file:
+        char,code=line.strip('\n').split('\t')
+        originalDict[char]=code
 
-
+mistakeChars = []
+count=0
+for charName,chaiKeycode in wubi98.keycodeResultDict.items():
+    char = wubi98.charDict[charName]
+    orginalKeycode = originalDict.get(charName)
+    if orginalKeycode:
+        count+=1
+        if chaiKeycode != orginalKeycode:
+            mistakeChars.append(char.name)
+            # mistakeInfo = [
+            #     '字符：%s' % char.name,
+            #     '字符结构：%s' % char.struct,
+            #     '字符末笔：%s' % char.strokeList[-1].type,
+            #     '原码：%s' % orginalKeycode,
+            #     '编码：%s' % chaiKeycode,
+            #     '最终拆分：%s' % ''.join(["{%s}" % unitChar.name for unitChar in char.scheme]),
+            #     ]
+            # mistakeInfos.append('\n'.join(mistakeInfo))
 # mistakeInfos = []
-# for charName,chaiKeycode in wubi98.keycodeResultDict.items():
-#     char = wubi98.charDict[charName]
-#     orginalKeycode = originalDict[charName]
-#     if chaiKeycode != orginalKeycode:
-#         scheme_strList = scheme_toStrList(char.scheme)
-#         possibleScheme=''
-#         if isinstance(char, UnitChar):
-#             possibleScheme = char.possibleSchemeList
-#         mistakeInfo = [
-#             '字符：%s' % char.name,
-#             '字符结构：%s' % char.struct,
-#             '字符末笔：%s' % char.strokeList[-1].type,
-#             '原码：%s' % orginalKeycode,
-#             '编码：%s' % chaiKeycode,
-#             '可行拆分：%s' % possibleScheme,
-#             '最终拆分：%s' % ''.join(scheme_strList),
-#             ]
-#         mistakeInfos.append('\n'.join(mistakeInfo))
+print('成字部件%d个，错误%d个。'%(count,mistakeChars.__len__()))
+print('可视再拆分')
+for charName in wubi98.filteredCharNameList:
+    char = wubi98.charDict[charName]
+    char.scheme=None
+    char.possibleSchemeList = None
+from .print_out_selector import Selector
+pos = Selector(wubi98.selector.sieves)
+wubi98.selector = pos
+wubi98.filteredCharNameList = mistakeChars
+wubi98.genScheme()
 # print('\n\n'.join(mistakeInfos))
-# print(mistakeInfos.__len__())

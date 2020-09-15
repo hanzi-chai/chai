@@ -1,5 +1,6 @@
 from pychai import Erbi
 
+# TODO: 未适配新工程结构
 xiaoqing = Erbi('xiaoqing')
 xiaoqing.run()
 

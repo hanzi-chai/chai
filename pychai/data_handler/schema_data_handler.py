@@ -100,21 +100,21 @@ def build_selector(schemaData) -> Selector:
 def generate_rootKeymap_degeneracy(
     schemaData,
     charDict,
-    degenerator) -> Tuple[Dict[str, UnitChar], Dict[str, str]]:
+    degenerator) -> Tuple[Dict[str, str], Dict[str, UnitChar]]:
     """
     功能：解析出退化的用户字根，建立退化字根到字根的字典、字根到键位的字典
     输出：用户字根索引字典 degeneracy 、键位索引字典 rootKeymap
     """
     # TODO: 添加二笔式的字根处理。11代表两横等等。
-    rootKeymap: Dict[str, UnitChar] = {} # 字根名到键位的映射，用于取码时键位索引
-    degeneracy: Dict[str, str] = {} # 退化字根到字根的映射，用于构建 powerDict
+    rootKeymap: Dict[str, str] = {} # 字根名到键位的映射，用于取码时键位索引
+    degeneracy: Dict[str, UnitChar] = {} # 退化字根到字根的映射，用于构建 powerDict
     # complexRootList =[] # TODO:合体字根的处理
     allRoots = sum([list(x) for x in schemaData['mapper'].values()], [])
     for key, rootList in schemaData['mapper'].items():
-        for root in rootList:
+        for rootName in rootList:
             # 是单笔画字根
-            if root in schemaData['classifier']:
-                for strokeType in schemaData['classifier'][root]:
+            if rootName in schemaData['classifier']:
+                for strokeType in schemaData['classifier'][rootName]:
                     rootKeymap[strokeType] = key
                     if strokeType not in ['竖折', '横钩', '横斜钩']:
                         strokeList = [Stroke([strokeType, None])]
@@ -122,20 +122,21 @@ def generate_rootKeymap_degeneracy(
                     else:
                         degeneracy[strokeType] = charDict[strokeType]
             # 字根是「文」数据中的一个部件
-            elif root in WEN:
-                rootKeymap[root] = key
-                char = charDict[root]
+            elif rootName in WEN:
+                rootKeymap[rootName] = key
+                char = charDict[rootName]
                 characteristicString = degenerator(char)
                 degeneracy[characteristicString] = char
+                char.scheme = (char,)
             # 字根不是「文」数据库中的部件，但用户定义了它
-            elif root in schemaData['aliaser']:
-                rootKeymap[root] = key
-                source, indexer = schemaData['aliaser'][root]
+            elif rootName in schemaData['aliaser']:
+                rootKeymap[rootName] = key
+                source, indexer = schemaData['aliaser'][rootName]
                 l = len(WEN[source])
                 sliceNum = sum(1 << (l - int(index) - 1)
                     for n, index in enumerate(indexer))
                 strokeList = [Stroke(WEN[source][int(index)]) for index in indexer]
-                char = UnitChar(root, strokeList, sourceName=source, sourceSlice=sliceNum)
+                char = UnitChar(rootName, strokeList, sourceName=source, sourceSlice=sliceNum)
                 characteristicString = degenerator(char)
                 degeneracy[characteristicString] = char
             # TODO:这种情况对应着合体字根，暂不考虑，等写嵌套的时候再写

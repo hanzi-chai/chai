@@ -1,5 +1,6 @@
 import setuptools
 
+# TODO: 未适配新工程结构
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
