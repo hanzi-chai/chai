@@ -1,5 +1,6 @@
 from pychai import Schema
 
+# TODO: 未适配新工程结构
 # 加载方案
 fingertip = Schema('fingertip')
 # 运行拆分

@@ -1,5 +1,3 @@
-from .pychai import *
-from .objects import *
-from .presets import *
-from .tools import *
-from .ui import *
+from .classes import Char, Char, UnitChar, NestedChar, Stroke, Degenerator, Selector
+from .core import ChaiAbstract, ChaiClassical
+from .utils import *
