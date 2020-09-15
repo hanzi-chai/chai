@@ -1,0 +1,17 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: zanderzhao/gitbook-action@v1.2
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        time_zone: Asia/Shanghai
+        source_dir: doc
