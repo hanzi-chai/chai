@@ -48,6 +48,11 @@ def checkCompleteness(classifier) -> None:
         raise ValueError('未定义的笔画：%s' % str(lostStrokes))
 
 def loadSchemaData(schemaName: str, path: str='') -> dict:
+    """
+    功能：载入 schemaData
+    输入：方案名，路径（可选）
+    输出：展开了 aliaser 的 schemaData。
+    """
     try:
         schemaData = load('%s%s.schema.yaml' % (path, schemaName), withNumbers=False)
     except FileNotFoundError:
@@ -62,6 +67,12 @@ def loadSchemaData(schemaName: str, path: str='') -> dict:
     return schemaData
 
 def build_strokeClassifier(schemaData) -> Dict[str,int]:
+    """
+    功能：构建笔画分类字典
+    输入：schemaData
+    输出：笔画分类字典。形如{ 笔画：类别 }
+        其中“笔画”指国家标准中的31种笔画，“类别”为常见的“12345”，对应“横竖撇点折”。
+    """
     strokeClassifier: Dict[str,int] = {}
     for strokeTypeNum, strokeNames in schemaData['classifier'].items():
         for strokeName in strokeNames:
@@ -69,6 +80,11 @@ def build_strokeClassifier(schemaData) -> Dict[str,int]:
     return strokeClassifier
 
 def build_degenerator(schemaData) -> Degenerator:
+    """
+    功能：构建退化执行器
+    输入：schemaData
+    输出：Degenerator
+    """
     degeneratorDict = {
         '笔画序列': getStrokeList,
         '笔画序列（简）': getStrokeListSimplified,
@@ -83,6 +99,11 @@ def build_degenerator(schemaData) -> Degenerator:
     return degenerator
 
 def build_selector(schemaData) -> Selector:
+    """
+    功能：构建择优器
+    输入：schemaData
+    输出：Selector
+    """
     sieveDict = {
         '根少优先': schemeLen,
         '笔顺优先': schemeOrder,

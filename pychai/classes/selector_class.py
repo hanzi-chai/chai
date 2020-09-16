@@ -1,6 +1,14 @@
 from typing import Dict, Callable
 from pychai.classes import UnitChar
 class Selector():
+    """择优器类，该类的实例可用于拆分择优。
+
+    择优器中可包含多个择优函数，用于从多种可能拆分中找出最优的拆分。自身可调用，当调用时会执行
+    __call__ 方法，依次对 UnitChar 执行各个择优函数。
+
+    属性：
+        sieves: 择优函数字典。形如：{ 择优函数名：择优函数 }。
+    """
     def __init__(self, sieves: Dict[str, Callable[[UnitChar], None]]={}):
         self.sieves = sieves
 
