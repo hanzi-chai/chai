@@ -1,3 +1,3 @@
-from .classes import Char, Char, UnitChar, NestedChar, Stroke, Degenerator, Selector
-from .core import ChaiAbstract, ChaiClassical
-from .utils import *
+from .base import Character
+from .core import Sequential
+from .util import *
