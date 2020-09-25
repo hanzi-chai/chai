@@ -1,5 +1,6 @@
 title: 汉字自动拆分系统
 description: 一种现代的方法
+base: /chai/
 themeConfig:
   sidebar:
     - title: 概述
