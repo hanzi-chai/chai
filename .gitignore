@@ -3,3 +3,6 @@
 build
 dist
 pychai.egg-info
+pychai/cache/*.yaml
+*.dict.yaml
+*.result.yaml

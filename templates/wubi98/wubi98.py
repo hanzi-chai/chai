@@ -1,65 +1,55 @@
-from pychai import ChaiClassical, Char
+'''
+实现五笔
+'''
 
-# 继承父类，实现编码方法。
-class Wubi(ChaiClassical):
-    def encodeChar(self, char: Char) -> None:
-        l = len(char.scheme)
+from pychai import Sequential, Character
+
+class Wubi98(Sequential):
+    '''
+    叶类
+    '''
+
+    def _encode(self, character: Character) -> None:
+        scheme = character.scheme
+        name = character.name
+        l = len(scheme)
         if l == 1:
-            charName = char.name
-            root = char.scheme[0]
-            rootName = root.name
-            keycode = self.rootKeymap[rootName]
-            # 单根字中的键名字，击四次该键，等效于取四次该字根
-            if charName in '王土大木工目日口田山禾白月人金言立水火之已子女又幺':
-                keycode = keycode * 4
+            root = scheme[0]
+            key = self.rootMap[root.name]
+            # 单根字中的键名字，击四次该键
+            if name in '王土大木工目日口田山禾白月人金言立水火之已子女又幺':
+                code = key * 4
             # 单根字中的单笔画字，取码为双击该键加上两个 L
-            elif charName in '一丨丿丶乙':
-                keycode = keycode * 2 + 'll'
+            elif name in '一丨丿丶乙':
+                code = key * 2 + 'll'
             # 普通成字字根，报户口 + 一二笔(+末笔)
             else:
+                code = key
                 for stroke in root.strokeList[:2]:
-                    keycode += self.rootKeymap[stroke.type]
+                    code += self.rootMap[stroke.feature]
                 if len(root.strokeList) > 2:
                     lastStroke = root.strokeList[-1]
-                    keycode += self.rootKeymap[lastStroke.type]
-            char.keycode = keycode
+                    code += self.rootMap[lastStroke.feature]
+            character.code = code
         elif l < 4:    # 不足4根要加识别码
-            keycode = ''
-            # 先把字根取码
-            for root in char.scheme:
-                keycode += self.rootKeymap[root.name]
-            # 建立识别码的键位映射，用二维数组表示
-            structKeyRef = [
-            #末笔 横   竖  撇   点  折
-                ['g','h','t','y','n'], # 左右
-                ['f','j','r','u','b'], # 上下
-                ['d','k','e','i','v']  # 杂合
-            ]
-            structTypeNum = 0
-            if (not char.struct) or char.struct not in 'hz':
-                structTypeNum = 2   # 杂合型
-            elif char.struct == 'h':
-                structTypeNum = 0   # 左右型
+            code = ''.join([self.rootMap[root.name] for root in scheme])
+            # 识别码
+            if character.operator == 'h':
+                identifierList = 'ghtyn'
+            elif character.operator == 'z':
+                identifierList = 'fjrub'
             else:
-                structTypeNum = 1   # 上下型
-            # 最后一笔的笔划号「12345」对应「横竖撇点折」
-            lastStrokeTypeNum = self.storkeClassifier[char.strokeList[-1].type]
-            keycode += structKeyRef[structTypeNum][lastStrokeTypeNum-1]
-            char.keycode = keycode
+                identifierList = 'dkeiv'
+            lastRoot = scheme[-1]
+            lastStroke = lastRoot.strokeList[-1]
+            # 末根末笔的笔划号「12345」对应「横竖撇点折」
+            lastStrokeCategory = self.classifier[lastStroke.feature]
+            code += identifierList[lastStrokeCategory - 1]
+            character.code = code
         else:
-            keycode = ''
-            for root in char.scheme[:3]:
-                keycode += self.rootKeymap[root.name]
-            keycode += self.rootKeymap[char.scheme[-1].name]
-            char.keycode = keycode
+            usefulScheme = scheme[:3] + scheme[-1:]
+            character.code = ''.join([self.rootMap[root.name] for root in usefulScheme])
 
 # 实例化拆分对象
-wubi98 = Wubi('wubi98')
-# 拆分
-wubi98.genScheme()
-# 编码
-wubi98.encode()
-# 输出编码表
-wubi98.output()
-# 输出拆分表
-wubi98.output(outputSchemaResult=True)
+wubi98 = Wubi98('templates/wubi98/wubi98.config.yaml')
+wubi98.chai('templates/wubi98/wubi98.result.yaml')
