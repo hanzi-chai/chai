@@ -1,4 +1,4 @@
-name: ci
+name: 文档
 
 on:
   push:
@@ -10,8 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - uses: zanderzhao/gitbook-action@v1.2
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        time_zone: Asia/Shanghai
-        source_dir: doc
+    - uses: jenkey2011/vuepress-deploy@master
+      env:
+        ACCESS_TOKEN: ${{ secrets.PAT }}
+        BUILD_SCRIPT: yarn && yarn build
+        BUILD_DIR: .vuepress/dist/
