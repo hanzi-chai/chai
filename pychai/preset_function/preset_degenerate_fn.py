@@ -1,6 +1,6 @@
 """预置退化映射组件"""
 from pychai.data import TOPOLOGY
-from pychai.classes import Char, Stroke
+from pychai.classes import Char, Stroke, UnitCharSlice
 from typing import Dict
 
 
@@ -28,7 +28,7 @@ def getTopoList(char: Char):
     输入：对象字
     输出：一个 n(n-1)/2 长度的字符串，n 为笔段个数
     """
-    if char.sourceName:
+    if isinstance(char, UnitCharSlice):
         ss = char.sourceSlice
         l = TOPOLOGY[char.sourceName]
         nestedList = [

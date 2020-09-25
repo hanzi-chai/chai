@@ -50,23 +50,6 @@ class ChaiAbstract():
     def encodeChar(self, char: Char) -> None:
         pass
 
-    # TODO: 可运行之后，写测试工具时再考虑是否保留这两个方法
-    # def genSchemeChar(self, charName: str)->Char:
-    #     objChar = self.__charDict[charName]
-    #     if not objChar:
-    #         raise ValueError("拆分系统字符集中未包含「%s」" % charName)
-    #     else:
-    #         self.__genSchemeUnitChar(objChar)
-    #         return objChar
-
-    # def encodeChar(self,charName = str)->Char:
-    #     objChar = self.__charDict[charName]
-    #     if not objChar:
-    #         raise ValueError("拆分系统字符集中未包含「%s」" % charName)
-    #     else:
-    #         self.__encodeSingleChar(objChar)
-    #         return objChar
-
     def genScheme(self) -> None:
         print("开始拆分...")
         start = time.time()
