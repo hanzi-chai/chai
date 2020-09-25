@@ -13,5 +13,5 @@ jobs:
     - uses: jenkey2011/vuepress-deploy@master
       env:
         ACCESS_TOKEN: ${{ secrets.PAT }}
-        BUILD_SCRIPT: yarn && yarn build
-        BUILD_DIR: .vuepress/dist/
+        BUILD_SCRIPT: cd doc && yarn && yarn build
+        BUILD_DIR: doc/.vuepress/dist/
