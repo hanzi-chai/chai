@@ -20,7 +20,7 @@ class Chai:
         self.selector: Selector = buildSelector(self.CONFIG)
         self.classifier = buildClassifier(self.CONFIG)
         self.rootMap = buildRootMap(self.CONFIG)
-        self.compoundRootList, self.degeneracy = buildDegeneracy(self.CONFIG, self.degenerator, 
+        self.compoundRootList, self.degeneracy = buildDegeneracy(self.CONFIG, self.degenerator,
             self.COMPONENTS, self.COMPOUNDS)
 
     @abc.abstractmethod
