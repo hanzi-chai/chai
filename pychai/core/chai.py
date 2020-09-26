@@ -3,7 +3,7 @@ Chai 基类
 '''
 
 import abc
-from typing import Dict, List
+from typing import Tuple
 from ..base import Character, Component, Compound, Degenerator, Selector
 from ..util import loadInternal, loadGB, loadComponents, loadCompounds, loadConfig
 from ..util import buildDegenerator, buildSelector, buildClassifier, buildRootMap, buildDegeneracy
@@ -24,24 +24,24 @@ class Chai:
             self.COMPONENTS, self.COMPOUNDS)
 
     @abc.abstractmethod
-    def _getComponentScheme(self, component: Component) -> None:
+    def _getComponentScheme(self, component: Component) -> Tuple[Component, ...]:
         pass
 
     @abc.abstractmethod
-    def _getCompoundScheme(self, compound: Compound) -> None:
+    def _getCompoundScheme(self, compound: Compound) -> Tuple[Component, ...]:
         pass
 
     @abc.abstractmethod
-    def _encode(self, character: Character) -> None:
+    def _encode(self, character: Character) -> str:
         pass
 
     def getComponentScheme(self) -> None:
         for component in self.COMPONENTS.values():
-            self._getComponentScheme(component)
+            component.scheme = self._getComponentScheme(component)
 
     def getCompoundScheme(self) -> None:
         for compound in self.COMPOUNDS.values():
-            self._getCompoundScheme(compound)
+            compound.scheme = self._getCompoundScheme(compound)
 
     def encode(self) -> None:
         for characterName in self.GB:
@@ -49,7 +49,7 @@ class Chai:
                 character = self.COMPONENTS[characterName]
             else:
                 character = self.COMPOUNDS[characterName]
-            self._encode(character)
+            character.code = self._encode(character)
 
     def chai(self, fileName) -> None:
         t0 = time.time()

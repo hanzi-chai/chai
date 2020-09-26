@@ -3,7 +3,7 @@
 '''
 
 from collections import deque
-from typing import List
+from typing import List, Tuple
 from .chai import Chai
 from ..base import Component, Compound, Fragment
 
@@ -87,14 +87,14 @@ class Sequential(Chai):
         # 将所有不足笔数长度的序列剔除，表明所取切片必含输入切片的第一笔
         return powerList[len(powerList)//2:]
 
-    def _getComponentScheme(self, component: Component) -> None:
+    def _getComponentScheme(self, component: Component) -> Tuple[Component, ...]:
         if component.name in self.rootMap:
-            component.scheme = (component,)
+            return (component,)
         else:
             self.__addPowerDict(component)
             self.__addSchemeList(component)
-            self.selector(component)
+            return self.selector(component)
 
-    def _getCompoundScheme(self, compound: Compound) -> None:
+    def _getCompoundScheme(self, compound: Compound) -> Tuple[Component, ...]:
         firstChild, secondChild = compound.firstChild, compound.secondChild
-        compound.scheme = firstChild.scheme + secondChild.scheme
+        return firstChild.scheme + secondChild.scheme
