@@ -5,7 +5,7 @@
 from collections import deque
 from typing import List, Tuple
 from .chai import Chai
-from ..base import Component, Compound, Fragment
+from ..base import Component, Compound
 
 class Sequential(Chai):
     '''
@@ -33,7 +33,7 @@ class Sequential(Chai):
                 if k & item:
                     sliceStrokeList.append(component.strokeList[index])
                     indexList.append(index)
-            fragment = Fragment('', sliceStrokeList, component, indexList)
+            fragment = component.fragment('', indexList)
             image = self.degenerator(fragment)
             # 找不到退化字根的切片将会标记为None
             component.powerDict[k] = self.degeneracy.get(image)

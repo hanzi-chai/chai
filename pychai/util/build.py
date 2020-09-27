@@ -2,7 +2,7 @@
 '''
 
 from typing import Tuple, List, Dict
-from ..base import Fragment, Singlet, Degenerator, Selector
+from ..base import Singlet, Degenerator, Selector
 from ..preset import *
 
 def buildClassifier(config) -> Dict[str,int]:
@@ -66,8 +66,7 @@ def buildDegeneracy(CONFIG, degenerator, COMPONENTS, COMPOUNDS) -> Tuple[List[st
             aliasData = CONFIG['aliaser'][rootName]
             source = COMPONENTS[aliasData['source']]
             indexList = aliasData['indexList']
-            strokeList = [source.strokeList[index] for index in indexList]
-            root = Fragment(rootName, strokeList, source, indexList)
+            root = source.fragment(rootName, indexList)
             image = degenerator(root)
             degeneracy[image] = root
         elif rootName in COMPOUNDS:

@@ -22,11 +22,17 @@ class Component(Character):
         self.powerDict: Dict[int, Component] = {}
         self.schemeList: List[Tuple[Component]] = {}
 
-class Fragment(Component):
-    def __init__(self, name: str, strokeList: List[Stroke], source: Component, indexList: List[int]):
-        super().__init__(name, strokeList, [[]])
-        self.source = source
-        self.indexList = indexList
+    def fragment(self, name: str, indexList: List[int]):
+        strokeList = [self.strokeList[index] for index in indexList]
+        fragmentTopologyMatrix = [
+            [
+                relation for nrelation, relation in enumerate(row)
+                if nrelation in indexList
+            ]
+            for nrow, row in enumerate(self.topologyMatrix)
+            if nrow in indexList
+        ]
+        return Component(name, strokeList, fragmentTopologyMatrix)
 
 class Singlet(Component):
     def __init__(self, name):

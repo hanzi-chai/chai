@@ -2,7 +2,7 @@
 预置退化映射组件
 '''
 
-from ..base import Stroke, Component, Fragment
+from ..base import Component
 
 def featureList(component: Component):
     '''
@@ -28,21 +28,7 @@ def topologyList(component: Component):
     输入：对象字
     输出：一个 n(n-1)/2 长度的字符串，n 为笔段个数
     '''
-    topology = component.topologyMatrix
-    if isinstance(component, Fragment):
-        indexList = component.indexList
-        topologyMatrix = component.source.topologyMatrix
-        nestedList = [
-            [
-                relation for nrelation, relation in enumerate(row)
-                if nrelation in indexList
-            ]
-            for nrow, row in enumerate(topologyMatrix)
-            if nrow in indexList
-        ]
-    else:
-        nestedList = topology
-    image = ' '.join(' '.join(x) for x in nestedList)
+    image = ' '.join(' '.join(x) for x in component.topologyMatrix)
     # 给这对字根添加额外的区分：
     if component.name in ['囗', '囱框']:
         image += '囗'
