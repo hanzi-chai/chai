@@ -14,5 +14,5 @@ class TestLoadBuild(TestCase):
         selector = buildSelector(CONFIG)
         storkeClassifier = buildClassifier(CONFIG)
         rootMap = buildRootMap(CONFIG)
-        compoundRootList, degeneracy = buildDegeneracy(CONFIG, degenerator, 
+        compoundRootList, degeneracy = buildDegeneracy(CONFIG, degenerator,
             COMPONENTS, COMPOUNDS)
