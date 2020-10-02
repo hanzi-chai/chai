@@ -10,6 +10,10 @@ from ..util import buildDegenerator, buildSelector, buildClassifier, buildRootMa
 import time
 
 class Chai:
+    '''
+    抽象基类
+    '''
+
     def __init__(self, configPath):
         self.GB = loadGB()
         self.COMPONENTS = loadComponents()
