@@ -5,7 +5,7 @@ Chai 基类
 import abc
 from typing import Tuple
 from ..base import Character, Component, Compound, Degenerator, Selector
-from ..util import loadInternal, loadGB, loadComponents, loadCompounds, loadConfig
+from ..util import loadGB, loadComponentsWithTopology, loadCompounds, loadConfig
 from ..util import buildDegenerator, buildSelector, buildClassifier, buildRootMap, buildDegeneracy
 import time
 
@@ -16,9 +16,8 @@ class Chai:
 
     def __init__(self, configPath):
         self.GB = loadGB()
-        self.COMPONENTS = loadComponents()
+        self.COMPONENTS = loadComponentsWithTopology()
         self.COMPOUNDS = loadCompounds(self.COMPONENTS)
-        self.TOPOLOGY = loadInternal('../cache/topology.yaml')
         self.CONFIG = loadConfig(configPath)
         self.degenerator: Degenerator = buildDegenerator(self.CONFIG)
         self.selector: Selector = buildSelector(self.CONFIG)

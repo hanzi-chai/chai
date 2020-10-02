@@ -29,12 +29,17 @@ def loadGB() -> List[str]:
 
 def loadComponents() -> Dict[str, Component]:
     data = loadInternal('../data/components.yaml')
-    TOPOLOGIES = loadInternal('../cache/topology.yaml')
     COMPONENTS = {}
     for name, componentData in data.items():
         strokeList = [Stroke(strokeData) for strokeData in componentData]
-        topologyMatrix = TOPOLOGIES[name]
-        COMPONENTS[name] = Component(name, strokeList, topologyMatrix)
+        COMPONENTS[name] = Component(name, strokeList)
+    return COMPONENTS
+
+def loadComponentsWithTopology() -> Dict[str, Component]:
+    COMPONENTS = loadComponents()
+    TOPOLOGIES = loadInternal('../cache/topology.yaml')
+    for name, component in COMPONENTS.items():
+        component.topologyMatrix = TOPOLOGIES[name]
     return COMPONENTS
 
 def loadCompounds(COMPONENTS) -> Dict[str, Compound]:
