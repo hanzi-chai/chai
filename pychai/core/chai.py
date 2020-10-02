@@ -3,7 +3,7 @@ Chai 基类
 '''
 
 import abc
-from typing import Dict, List
+from typing import Tuple
 from ..base import Character, Component, Compound, Degenerator, Selector
 from ..util import loadInternal, loadGB, loadComponents, loadCompounds, loadConfig
 from ..util import buildDegenerator, buildSelector, buildClassifier, buildRootMap, buildDegeneracy
@@ -24,15 +24,15 @@ class Chai:
         self.selector: Selector = buildSelector(self.CONFIG)
         self.classifier = buildClassifier(self.CONFIG)
         self.rootMap = buildRootMap(self.CONFIG)
-        self.compoundRootList, self.degeneracy = buildDegeneracy(self.CONFIG, self.degenerator, 
+        self.compoundRootList, self.degeneracy = buildDegeneracy(self.CONFIG, self.degenerator,
             self.COMPONENTS, self.COMPOUNDS)
 
     @abc.abstractmethod
-    def _getComponentScheme(self, component: Component) -> None:
+    def _getComponentScheme(self, component: Component) -> Tuple[Component, ...]:
         pass
 
     @abc.abstractmethod
-    def _getCompoundScheme(self, compound: Compound) -> None:
+    def _getCompoundScheme(self, compound: Compound) -> Tuple[Component, ...]:
         pass
 
     @abc.abstractmethod
@@ -41,11 +41,11 @@ class Chai:
 
     def getComponentScheme(self) -> None:
         for component in self.COMPONENTS.values():
-            self._getComponentScheme(component)
+            component.scheme = self._getComponentScheme(component)
 
     def getCompoundScheme(self) -> None:
         for compound in self.COMPOUNDS.values():
-            self._getCompoundScheme(compound)
+            compound.scheme = self._getCompoundScheme(compound)
 
     def encode(self) -> None:
         for characterName in self.GB:
