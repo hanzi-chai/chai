@@ -10,6 +10,10 @@ from ..util import buildDegenerator, buildSelector, buildClassifier, buildRootMa
 import time
 
 class Chai:
+    '''
+    抽象基类
+    '''
+
     def __init__(self, configPath):
         self.GB = loadGB()
         self.COMPONENTS = loadComponents()
@@ -32,7 +36,7 @@ class Chai:
         pass
 
     @abc.abstractmethod
-    def _encode(self, character: Character) -> None:
+    def _encode(self, character: Character) -> str:
         pass
 
     def getComponentScheme(self) -> None:
@@ -49,7 +53,7 @@ class Chai:
                 character = self.COMPONENTS[characterName]
             else:
                 character = self.COMPOUNDS[characterName]
-            self._encode(character)
+            character.code = self._encode(character)
 
     def chai(self, fileName) -> None:
         t0 = time.time()
