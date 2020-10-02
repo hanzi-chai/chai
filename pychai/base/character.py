@@ -15,16 +15,16 @@ class Component(Character):
     '''
     部件
     '''
-    def __init__(self, name: str, strokeList: List[Stroke], topologyMatrix: List[List[str]]):
+    def __init__(self, name: str, strokeList: List[Stroke]):
         super().__init__(name, None)
         self.strokeList = strokeList
-        self.topologyMatrix = topologyMatrix
+        self.topologyMatrix = None
         self.powerDict: Dict[int, Component] = {}
         self.schemeList: List[Tuple[Component]] = {}
 
 class Fragment(Component):
     def __init__(self, name: str, strokeList: List[Stroke], source: Component, indexList: List[int]):
-        super().__init__(name, strokeList, [[]])
+        super().__init__(name, strokeList)
         self.source = source
         self.indexList = indexList
 
@@ -35,7 +35,7 @@ class Singlet(Component):
             'start': [],
             'curveList': []
         })
-        super().__init__(name, [stroke], [[]])
+        super().__init__(name, [stroke])
 
 class Compound(Character):
     '''

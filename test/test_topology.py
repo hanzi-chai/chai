@@ -1,5 +1,5 @@
 from unittest import TestCase
-from pychai.cache import newton, linear
+from pychai.cache.topology import newton, linear
 from pychai.util import loadComponents
 from numpy import array, stack
 from numpy.linalg import norm
