@@ -21,7 +21,7 @@ def loadExternal(path, withNumbers=True):
     输出：yaml 解析器加载后的数据
     '''
     loader = SafeLoader if withNumbers else BaseLoader
-    with open(path) as file:
+    with open(path, encoding='utf-8') as file:
         return yaml.load(file, loader)
 
 def loadGB() -> List[str]:
