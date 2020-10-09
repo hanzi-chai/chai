@@ -41,7 +41,7 @@ class Singlet(Component):
             'start': [],
             'curveList': []
         })
-        super().__init__(name, [stroke], [[]])
+        super().__init__(name, [stroke])
 
 class Compound(Character):
     '''
