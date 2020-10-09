@@ -1,0 +1,3 @@
+[submodule "pychai/data"]
+	path = pychai/data
+	url = https://github.com/hanzi-chai/data.git
