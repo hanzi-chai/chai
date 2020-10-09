@@ -1,3 +1,0 @@
-[submodule "pychai/data"]
-	path = pychai/data
-	url = git@lanluoxiao:hanzi-chai/data.git
