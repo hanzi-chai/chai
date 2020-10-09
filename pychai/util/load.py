@@ -20,7 +20,7 @@ def loadExternal(path, withNumbers=True):
     输入：路径 path
     输出：yaml 解析器加载后的数据
     '''
-    file = open(path)
+    file = open(path, encoding='utf-8')
     loader = SafeLoader if withNumbers else BaseLoader
     return yaml.load(file, loader)
 
@@ -32,7 +32,7 @@ def loadComponents() -> Dict[str, Component]:
     COMPONENTS = {}
     for name, componentData in data.items():
         strokeList = [Stroke(strokeData) for strokeData in componentData]
-        COMPONENTS[name] = Component(name, strokeList)
+        COMPONENTS[name] = Component(name, strokeList, None)
     return COMPONENTS
 
 def loadComponentsWithTopology() -> Dict[str, Component]:
