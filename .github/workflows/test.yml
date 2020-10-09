@@ -1,0 +1,17 @@
+name: 测试
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on:
+      - windows-latest
+      - macos-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+    - uses: onichandame/python-test-action@master

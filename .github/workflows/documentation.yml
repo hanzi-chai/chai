@@ -1,0 +1,17 @@
+name: 文档
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: jenkey2011/vuepress-deploy@master
+      env:
+        ACCESS_TOKEN: ${{ secrets.PAT }}
+        BUILD_SCRIPT: cd doc && yarn && yarn build
+        BUILD_DIR: .vuepress/dist/
