@@ -10,12 +10,17 @@ jobs:
     strategy:
       matrix:
         os:
-        - ubuntu-latest
-        - macos-latest
-        - windows-latest
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+        python-version:
+          - 3.8
     runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v2
-      with:
-        submodules: true
-    - uses: onichandame/python-test-action@master
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: python -m unittest discover
