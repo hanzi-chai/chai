@@ -63,7 +63,7 @@ class Chai:
         self.encode()
         t3 = time.time()
         print(t1 - t0, t2 - t1, t3 - t2)
-        with open(fileName, 'w', encoding='utf-8') as f:
+        with open(fileName, 'w') as f:
             for characterName in self.GB:
                 if characterName in self.COMPONENTS:
                     character = self.COMPONENTS[characterName]
