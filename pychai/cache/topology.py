@@ -100,6 +100,6 @@ if __name__ == '__main__':
         TOPOLOGIES[componentName] = topology(component)
     path = os.path.join(os.path.dirname(__file__), 'topology.yaml')
 
-    with open(path, 'w') as file:
+    with open(path, 'w', encoding='utf-8') as file:
         for componentName, topologyList in TOPOLOGIES.items():
             file.write(f'{componentName}: {topologyList}\n')

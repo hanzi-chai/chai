@@ -20,9 +20,9 @@ def loadExternal(path, withNumbers=True):
     输入：路径 path
     输出：yaml 解析器加载后的数据
     '''
-    file = open(path)
     loader = SafeLoader if withNumbers else BaseLoader
-    return yaml.load(file, loader)
+    with open(path) as file:
+        return yaml.load(file, loader)
 
 def loadGB() -> List[str]:
     return loadInternal('../data/GB.yaml')
