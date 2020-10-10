@@ -80,7 +80,7 @@ class Topology:
             row = []
             curveList = stroke.curveList
             for n_, stroke_ in enumerate(strokeList):
-                if n_ <= n: continue
+                if n_ >= n: continue
                 curveList_ = stroke_.curveList
                 relationList = []
                 for curve in curveList:

@@ -1,15 +1,15 @@
 import setuptools
 
-with open('README.md', 'r') as fh:
+with open('README.md', encoding='utf-8') as fh:
     long_description = fh.read()
 
 setuptools.setup(
     name='pychai',
     version='1.0.1',
-    author='hanzi-chai (Luoxiao Lan)',
+    author='hanzi-chai',
     author_email='2320693692@qq.com',
     description='A System for Automatic Chinese Character Decomposition',
-    install_requires=['PyYAML'],
+    install_requires=['PyYAML', 'numpy'],
     long_description=long_description,
     long_description_content_type='text/markdown',
     url='https://github.com/hanzi-chai/chai',
