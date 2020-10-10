@@ -2,8 +2,7 @@
 经典形码
 '''
 
-from collections import deque
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 from .chai import Chai
 from ..base import Component, Compound
 
@@ -11,88 +10,80 @@ class Sequential(Chai):
     '''
     经典形码
     '''
-
-    def __addPowerDict(self, component: Component) -> None:
-        '''
-        功能：解析出基础字的所有有效切片，构造切片到用户字根的字典 powerDict
-        输入：基础字的对象字
-        输出：将 powerDict 传给对象字
-        备注1：有效切片是由用户定义的字根定义的
-        备注2：依赖退化函数 degenerate ，依赖用户字根索引字典 degeneracy
-        '''
-        component.powerDict = {}
-        # 生成掩码，二进制分别为 1，10，100……
-        l = len(component.strokeList)
-        mask = [1 << (l-i-1) for i in range(l)]
-        for k in range(1, 2**l):
-            sliceStrokeList = []
-            # 数 k 与某个掩码按位与后，如果不为 0，那么说明k的二进制在掩码位为 1
-            # 此时添加这一位对应的笔画
-            indexList = []
-            for index, item in enumerate(mask):
-                if k & item:
-                    sliceStrokeList.append(component.strokeList[index])
-                    indexList.append(index)
-            fragment = component.fragment('', indexList)
-            image = self.degenerator(fragment)
-            # 找不到退化字根的切片将会标记为None
-            component.powerDict[k] = self.degeneracy.get(image)
-
-    def __addSchemeList(self, component: Component) -> None:
-        '''
-        功能：解析出在给定字根集下对象字的所有有效的拆分
-        输入：对象字（字、字根）
-        输出：将所有有效的拆分 schemeList 传给 objectChar
-        '''
-        l = len(component.strokeList)
-        # 建立一个字典记录拆分状态，若已拆完则为真，否则为假
-        queue = deque([(2**l - 1, )])
-        schemeList = []
-        # 将拆分列表进行迭代，每次选取未拆完的一个对象，将最后一个组件拆分一次
-        while queue:
-            scheme = queue.popleft()
-            residue = scheme[-1]
-            # 上一行：无效切片会因为返回None而被filter筛除
-            rootList = list(filter(lambda x: component.powerDict[x], self.__nextRoot(residue)))
-            for root in rootList:
-                if root != residue: # 没拆完
-                    queue.append(scheme[:-1] + (root, residue - root))
-                else: # 新拆出的字根和原有剩余一样大，说明已拆完
-                    schemeList.append(scheme)
-        component.schemeList = schemeList
-
     @staticmethod
-    def __nextRoot(n) -> List[int]:
-        '''
-        功能：给定字未拆完的部分，求拆出下一个字根的所有可能性
-        输入：数 n
-        输出：在数的二进制表示中左边第一位取 1 ，其余所有「1」的位上取 1 或取 0
-            的所有可能的数的列表
-        备注：一个含有n笔的字可用一个十进制数2**n-1表达其笔画状态
-            例如一个3笔的字可以用7来表示，其对应二进值是111
-            对于字的任意切片，可同理表示，上字含首末笔的切片为101，对应十进值为5
-            以下算法基于位运算
-        '''
-        powerList = [0]
-        while n: # 直到当前序列所有「1」位都被置0之前，做：
-            # 找到右边第一个「1」，如1110010的右二位，将其置0，得余待检序列1110000
-            t = n & (n - 1)
-            # 当前序列扣除余待检序列，获得当前位及其右边所有位，1110010-1110000=10
-            m = n - t
-            # 将余待检序列设为当前序列，用于下一loop
-            n = t
-            # 对列表中每一个已有位扩增当前位「1」，并以此列表扩增原列表
-            powerList = powerList + [x + m for x in powerList]
-            # 当前位的「0」选项，将会在下一位「1」扩增时扩增
-        # 将所有不足笔数长度的序列剔除，表明所取切片必含输入切片的第一笔
-        return powerList[len(powerList)//2:]
+    def findSliceV1(component: Component, root: Component):
+        '''check topo on each step'''
+        cpnStrokeList = component.strokeList
+        rootStrokeList = root.strokeList
+        cpnLength = len(cpnStrokeList)
+        rootLength = len(rootStrokeList)
+        result: List[int] = []
+        if cpnLength < rootLength:
+            return result
+        rootFirstStroke = rootStrokeList[0]
+        searchLengthLimit = cpnLength - rootLength + 1
+        validIndexLists: List[List[int]] = []
+        for cpnStrokeListIndex in range(0, searchLengthLimit):
+            if cpnStrokeList[cpnStrokeListIndex].feature == rootFirstStroke.feature:
+                validIndexLists.append([cpnStrokeListIndex])
+        if len(validIndexLists) == 0:
+            return result
+        else:
+            for rStrokeListIndex in range(1, rootLength):
+                nextLevelValidIndexLists: List[List[int]] = []
+                limit = searchLengthLimit + rStrokeListIndex
+                for indexList in validIndexLists:
+                    for cpnStrokeListIndex in range(indexList[-1]+1, limit):
+                        if cpnStrokeList[cpnStrokeListIndex].feature == rootStrokeList[rStrokeListIndex].feature:
+                            expandedIndexList = indexList + [cpnStrokeListIndex]
+                            if component.getTopologyMatrixSlice(expandedIndexList) == \
+                                root.getTopologyMatrixSliceSimple(rStrokeListIndex):
+                                nextLevelValidIndexLists.append(expandedIndexList)
+                if len(nextLevelValidIndexLists) == 0:
+                    return result
+                else:
+                    validIndexLists = nextLevelValidIndexLists
+        for indexList in validIndexLists:
+            result.append(component.indexListToBinaryCode(indexList))
+        return result
+
+    def findAllValidCombinations(self, component: Component):
+        for root in self.rootList:
+            sliceBinaryCodeList = Sequential.findSliceV1(component, root)
+            for sliceBinaryCode in sliceBinaryCodeList:
+                component.powerDict[sliceBinaryCode] = root
+        sliceBinaryCodeList = list(component.powerDict.keys())
+        sliceBinaryCodeListLength = len(sliceBinaryCodeList)
+        result : List[Tuple[int,...]] = []
+        if sliceBinaryCodeListLength == 0:
+            return result
+        sliceBinaryCodeList.sort(reverse=True)
+        def inner(currentCombinationStateBinaryCode: int,currentStrokeToFind: int, currentCombinationTuple: Tuple[int,...], startSearchingFromIndex: int):
+            notFoundFlag = True
+            while currentStrokeToFind!=0 and notFoundFlag:
+                for index in range(startSearchingFromIndex,sliceBinaryCodeListLength):
+                    binaryCode = sliceBinaryCodeList[index]
+                    if currentStrokeToFind & binaryCode != 0 and currentCombinationStateBinaryCode & binaryCode == 0:
+                        notFoundFlag = False
+                        newCombinationStateBinaryCode = currentCombinationStateBinaryCode + binaryCode
+                        expandedCombinationTuple = currentCombinationTuple + (binaryCode,)
+                        nextStrokeMask = currentStrokeToFind >> 1
+                        while nextStrokeMask & newCombinationStateBinaryCode != 0:
+                            nextStrokeMask = nextStrokeMask >> 1
+                        if nextStrokeMask==0:
+                            result.append(expandedCombinationTuple)
+                        else:
+                            inner(newCombinationStateBinaryCode, nextStrokeMask, expandedCombinationTuple, index + 1)
+                if notFoundFlag:
+                    currentStrokeToFind = currentStrokeToFind>>1
+        inner(0, 1 << (len(component.strokeList) - 1), (), 0)
+        return result
 
     def _getComponentScheme(self, component: Component) -> Tuple[Component, ...]:
         if component.name in self.rootMap:
             return (component,)
         else:
-            self.__addPowerDict(component)
-            self.__addSchemeList(component)
+            component.schemeList = self.findAllValidCombinations(component)
             return self.selector(component)
 
     def _getCompoundScheme(self, compound: Compound) -> Tuple[Component, ...]:
