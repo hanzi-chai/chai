@@ -3,8 +3,9 @@ from pychai import Sequential, Character
 
 def printDict(d):
     for key, value in d.items():
-        name = value.name if value else 'None'
-        print('%10s --- %s' % (bin(key).strip('0b'),name))
+        if value:
+            name = value.name
+            print('%8s --- %s' % (bin(key)[2:],name))
 
 class Wubi98(Sequential):
     '''
@@ -39,12 +40,14 @@ class Wubi98(Sequential):
     def debug(self):
         for component in self.COMPONENTS.values():
             if component.name not in self.rootMap:
-                print(component.name)
                 p1 = self.oldPowerDict(component)
                 p2 = self.new(component)
-                printDict(p1)
-                print()
-                printDict(p2)
+                for k, root in p2.items():
+                    if p1[k] != root:
+                        print(component.name)
+                        printDict(p1)
+                        print()
+                        printDict(p2)
 
 # 实例化拆分对象
 wubi98 = Wubi98('templates/wubi98/wubi98.config.yaml')

@@ -12,7 +12,7 @@ schema:
 
 degenerator:
   - 笔画序列
-  # - 笔画拓扑
+  - 笔画拓扑
 
 selector:
   - 根少优先

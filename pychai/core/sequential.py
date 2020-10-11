@@ -37,7 +37,7 @@ class Sequential(Chai):
                         if cpnStrokeList[cpnStrokeListIndex].feature == rootStrokeList[rStrokeListIndex].feature:
                             expandedIndexList = indexList + [cpnStrokeListIndex]
                             c_topo = component.getTopologyMatrixSlice(expandedIndexList)
-                            r_topo = component.getTopologyMatrixSliceSimple(rStrokeListIndex)
+                            r_topo = root.getTopologyMatrixSliceSimple(rStrokeListIndex)
                             if  Component.topologyMatrixToString(c_topo) == Component.topologyMatrixToString(r_topo):
                                 nextLevelValidIndexLists.append(expandedIndexList)
                 if len(nextLevelValidIndexLists) == 0:
