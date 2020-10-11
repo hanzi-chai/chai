@@ -18,9 +18,14 @@ class Component(Character):
     def __init__(self, name: str, strokeList: List[Stroke]):
         super().__init__(name, None)
         self.strokeList = strokeList
-        self.topologyMatrix = None
+        self.topologyMatrix: List[List[str]] = None
         self.powerDict: Dict[int, Component] = {}
         self.schemeList: List[Tuple[Component]] = {}
+
+    @staticmethod
+    def topologyMatrixToString(topologyMatrix: List[List[str]]):
+        return ' '.join(' '.join(x) for x in topologyMatrix)
+
 
     def getTopologyMatrixSliceSimple(self, lastIndex: int):
         return [
