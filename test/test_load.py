@@ -9,7 +9,7 @@ class TestLoadBuild(TestCase):
         GB = loadGB()
         COMPONENTS = loadComponents()
         COMPOUNDS = loadCompounds(COMPONENTS)
-        CONFIG = loadConfig('templates/wubi98/wubi98.config.yaml')
+        CONFIG = loadConfig('pychai/examples/wubi98/wubi98.config.yaml')
         degenerator = buildDegenerator(CONFIG)
         selector = buildSelector(CONFIG)
         storkeClassifier = buildClassifier(CONFIG)
