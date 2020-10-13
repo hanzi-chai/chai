@@ -12,72 +12,97 @@ class Sequential(Chai):
     '''
     @staticmethod
     def findSliceV1(component: Component, root: Component):
-        '''check topo on each step'''
+        '''找出一个根在一个部件字中的所有有效切片
+
+        V1版本，会在每匹配到一个笔画时就检查拓扑。
+
+        参数:
+            component: 待拆部件
+            root: 根部件
+
+        输出:
+            List[int]: 根部件在待拆部件中的所有有效切片，切片用二进制表示。没有找到切片时返回
+            空列表。
+            例: 待拆部件“天”，根部件“大”。“大”在“天”中的有效的切片为“天”的第2、3、4笔。“天”
+            的笔画列表为['横', '横', '撇', '捺']，每一位都取用 index 列表表示为[0,1,2,3]
+            二进制表示为 0b1111 ，只取后三笔用 index 列表表示为[1,2,3]，二进制表示为 0b0111，
+            即整型数字 7 。故输出为 [7]。
+        '''
         cpnStrokeList = component.strokeList
-        rootStrokeList = root.strokeList
+        rStrokeList = root.strokeList
         cpnLength = len(cpnStrokeList)
-        rootLength = len(rootStrokeList)
+        rootLength = len(rStrokeList)
         result: List[int] = []
         if cpnLength < rootLength:
             return result
-        rootFirstStroke = rootStrokeList[0]
-        searchLengthLimit = cpnLength - rootLength + 1
-        validIndexLists: List[List[int]] = []
-        for cpnStrokeListIndex in range(0, searchLengthLimit):
-            if cpnStrokeList[cpnStrokeListIndex].feature == rootFirstStroke.feature:
-                validIndexLists.append([cpnStrokeListIndex])
-        if len(validIndexLists) == 0:
+        # 动态规划思想，找根的第 n 笔的切片列表取决于根第 n-1 笔的切片列表。由此反推，先找根第
+        # 1笔的切片列表，然后反复依照前一笔的切片列表找下一笔的切片列表，直到根所有笔画查找完毕。
+        # 若在查找根的某一笔时切片列表为空，则提前终止，返回空列表。
+        validIndexLists: List[List[int]] = [] # 记录当前根笔画的切片列表
+        rootFirstStroke = rStrokeList[0]
+        lengthLimit = cpnLength - rootLength + 1 # 根的笔画序列长度限制查找范围
+        for cpnStrokeIndex in range(0, lengthLimit):
+            if cpnStrokeList[cpnStrokeIndex].feature == rootFirstStroke.feature:
+                validIndexLists.append([cpnStrokeIndex])
+        if len(validIndexLists) == 0: # 根第1笔就已经没有找到切片的话直接返回空列表
             return result
-        else:
-            for rStrokeListIndex in range(1, rootLength):
-                nextLevelValidIndexLists: List[List[int]] = []
-                limit = searchLengthLimit + rStrokeListIndex
-                for indexList in validIndexLists:
-                    for cpnStrokeListIndex in range(indexList[-1]+1, limit):
-                        if cpnStrokeList[cpnStrokeListIndex].feature == rootStrokeList[rStrokeListIndex].feature:
-                            expandedIndexList = indexList + [cpnStrokeListIndex]
-                            c_topo = component.getTopologyMatrixSlice(expandedIndexList)
-                            r_topo = root.getTopologyMatrixSliceSimple(rStrokeListIndex)
-                            if  Component.topologyMatrixToString(c_topo) == Component.topologyMatrixToString(r_topo):
-                                nextLevelValidIndexLists.append(expandedIndexList)
-                if len(nextLevelValidIndexLists) == 0:
-                    return result
-                else:
-                    validIndexLists = nextLevelValidIndexLists
+        # 循环查找根的第2笔到末笔的切片列表，每次查找均以上一笔的切片列表为依照
+        for rStrokeIndex in range(1, rootLength):
+            nextLevelValidIndexLists: List[List[int]] = []
+            limit = lengthLimit + rStrokeIndex # 根据查找的是根剩余的长度调整查找范围
+            for indexList in validIndexLists:
+                for cpnStrokeIndex in range(indexList[-1]+1, limit):
+                    if cpnStrokeList[cpnStrokeIndex].feature == rStrokeList[rStrokeIndex].feature:
+                        expandedIndexList = indexList + [cpnStrokeIndex]
+                        # 检查拓扑是否符合
+                        cTopo = component.getTopoSliceByIndexes(expandedIndexList)
+                        rTopo = root.getTopoSliceByIndex(rStrokeIndex)
+                        cTopoStr = Component.topoToString(cTopo)
+                        rTopoStr = Component.topoToString(rTopo)
+                        if  cTopoStr == rTopoStr:
+                            nextLevelValidIndexLists.append(expandedIndexList)
+            if len(nextLevelValidIndexLists) == 0:
+                return result
+            # 每完成根的一个笔画的查找，更新切片列表，用于下一笔的查找
+            validIndexLists = nextLevelValidIndexLists
         for indexList in validIndexLists:
-            result.append(component.indexListToBinaryCode(indexList))
+            result.append(component.indexListToBinary(indexList))
         return result
 
     def findAllValidCombinations(self, component: Component):
+        '''找出部件在根集中的所有可行组合
+
+        参数:
+            component: 待组合的部件
+
+        输出:
+            List[Tuple[int,...]]: 组合列表，根用切片二进制数表示
+        '''
         for root in self.rootList:
-            sliceBinaryCodeList = Sequential.findSliceV1(component, root)
-            for sliceBinaryCode in sliceBinaryCodeList:
-                component.powerDict[sliceBinaryCode] = root
-        sliceBinaryCodeList = list(component.powerDict.keys())
-        sliceBinaryCodeListLength = len(sliceBinaryCodeList)
+            sliceBinaryList = Sequential.findSliceV1(component, root)
+            for sliceBinary in sliceBinaryList:
+                component.powerDict[sliceBinary] = root
+        sliceBinaryList = list(component.powerDict.keys())
+        listLength = len(sliceBinaryList)
         result : List[Tuple[int,...]] = []
-        if sliceBinaryCodeListLength == 0:
+        if listLength == 0:
             return result
-        sliceBinaryCodeList.sort(reverse=True)
-        def inner(currentCombinationStateBinaryCode: int,currentStrokeToFind: int, currentCombinationTuple: Tuple[int,...], startSearchingFromIndex: int):
-            notFoundFlag = True
-            while currentStrokeToFind!=0 and notFoundFlag:
-                for index in range(startSearchingFromIndex,sliceBinaryCodeListLength):
-                    binaryCode = sliceBinaryCodeList[index]
-                    if currentStrokeToFind & binaryCode != 0 and currentCombinationStateBinaryCode & binaryCode == 0:
-                        notFoundFlag = False
-                        newCombinationStateBinaryCode = currentCombinationStateBinaryCode + binaryCode
-                        expandedCombinationTuple = currentCombinationTuple + (binaryCode,)
-                        nextStrokeMask = currentStrokeToFind >> 1
-                        while nextStrokeMask & newCombinationStateBinaryCode != 0:
-                            nextStrokeMask = nextStrokeMask >> 1
-                        if nextStrokeMask==0:
-                            result.append(expandedCombinationTuple)
-                        else:
-                            inner(newCombinationStateBinaryCode, nextStrokeMask, expandedCombinationTuple, index + 1)
-                if notFoundFlag:
-                    currentStrokeToFind = currentStrokeToFind>>1
-        inner(0, 1 << (len(component.strokeList) - 1), (), 0)
+        sliceBinaryList.sort(reverse=True)
+        finishBinary = 2 ** len(component.strokeList) - 1
+        def combineNext(
+            currentBinary: int,
+            currentCombination: Tuple[int,...],
+            startFromIndex: int):
+            for index in range(startFromIndex, listLength):
+                binary = sliceBinaryList[index]
+                if currentBinary & binary == 0:
+                    newBinary = currentBinary + binary
+                    expandedCombination = currentCombination + (binary,)
+                    if newBinary == finishBinary:
+                        result.append(expandedCombination)
+                    else:
+                        combineNext(newBinary, expandedCombination, index + 1)
+        combineNext(0, (), 0)
         return result
 
     def _getComponentScheme(self, component: Component) -> Tuple[Component, ...]:

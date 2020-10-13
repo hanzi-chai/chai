@@ -23,11 +23,11 @@ class Component(Character):
         self.schemeList: List[Tuple[Component]] = {}
 
     @staticmethod
-    def topologyMatrixToString(topologyMatrix: List[List[str]]):
+    def topoToString(topologyMatrix: List[List[str]]):
         return ' '.join(' '.join(x) for x in topologyMatrix)
 
 
-    def getTopologyMatrixSliceSimple(self, lastIndex: int):
+    def getTopoSliceByIndex(self, lastIndex: int):
         return [
             [
                 relation for nrelation, relation in enumerate(row)
@@ -37,7 +37,7 @@ class Component(Character):
             if nrow <= lastIndex
         ]
 
-    def getTopologyMatrixSlice(self, indexList: List[int]):
+    def getTopoSliceByIndexes(self, indexList: List[int]):
         return [
             [
                 relation for nrelation, relation in enumerate(row)
@@ -47,7 +47,7 @@ class Component(Character):
             if nrow in indexList
         ]
 
-    def indexListToBinaryCode(self, indexList: List[int]):
+    def indexListToBinary(self, indexList: List[int]):
         length = len(self.strokeList)
         binaryCode: int = 0
         for index in indexList:
@@ -56,7 +56,7 @@ class Component(Character):
 
     def fragment(self, name: str, indexList: List[int]):
         strokeList = [self.strokeList[index] for index in indexList]
-        fragmentTopologyMatrix = self.getTopologyMatrixSlice(indexList)
+        fragmentTopologyMatrix = self.getTopoSliceByIndexes(indexList)
         component =  Component(name, strokeList)
         component.topologyMatrix = fragmentTopologyMatrix
         return component

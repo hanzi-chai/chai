@@ -1,6 +1,7 @@
 import random
 import time
 from typing import Dict, List, Callable
+from collections import deque
 
 class Component():
     '''
@@ -237,6 +238,59 @@ def find_all_valid_combinations(component: Component, roots: List[Component], fi
     inner(0, 1 << (component.length - 1), [], 0)
     return result
 
+def find_all_valid_combinations_v2(component: Component, roots: List[Component], find_slice_fn: Callable[[Component,Component],List[int]]):
+    slice_binary_code_dict: Dict[int,Component] = {}
+    for root in roots:
+        slice_binary_code_list = find_slice_fn(component, root)
+        for slice_binary_code in slice_binary_code_list:
+            slice_binary_code_dict[slice_binary_code] = root
+    slice_binary_code_list = list(slice_binary_code_dict.keys())
+    slice_binary_code_list_length = len(slice_binary_code_list)
+    result : List[List[Component]] = []
+    if slice_binary_code_list_length == 0:
+        return result
+    slice_binary_code_list.sort(reverse=True)
+    full_mask = 2 ** len(component.stroke_list) - 1
+    def inner(current_combination_state_binary_code: int, current_combination_list: List[Component], start_searching_from_index: int):
+        for index in range(start_searching_from_index, slice_binary_code_list_length):
+            binary_code = slice_binary_code_list[index]
+            if current_combination_state_binary_code & binary_code == 0:
+                new_combination_state_binary_code = current_combination_state_binary_code + binary_code
+                new_combination_list = current_combination_list + [slice_binary_code_dict[binary_code]]
+                if new_combination_state_binary_code==full_mask:
+                    result.append(new_combination_list)
+                else:
+                    inner(new_combination_state_binary_code, new_combination_list, index + 1)
+    inner(0, [], 0)
+    return result
+
+def find_all_valid_combinations_v3(component: Component, roots: List[Component], find_slice_fn: Callable[[Component,Component],List[int]]):
+    slice_binary_code_dict: Dict[int,Component] = {}
+    for root in roots:
+        slice_binary_code_list = find_slice_fn(component, root)
+        for slice_binary_code in slice_binary_code_list:
+            slice_binary_code_dict[slice_binary_code] = root
+    def __nextRoot(n) -> List[int]:
+        powerList = [0]
+        while n: # 直到当前序列所有「1」位都被置0之前，做：
+            t = n & (n - 1)
+            m = n - t
+            n = t
+            powerList = powerList + [x + m for x in powerList]
+        return powerList[len(powerList)//2:]
+    l = len(component.stroke_list)
+    queue = deque([(2**l - 1, )])
+    schemeList = []
+    while queue:
+        scheme = queue.popleft()
+        residue = scheme[-1]
+        rootList = list(filter(lambda x: slice_binary_code_dict.get(x), __nextRoot(residue)))
+        for root in rootList:
+            if root != residue: # 没拆完
+                queue.append(scheme[:-1] + (root, residue - root))
+            else:
+                schemeList.append([slice_binary_code_dict[x] for x in scheme])
+    return schemeList
 
 #### test utils
 def random_stroke_list(n: int) -> str:
@@ -414,7 +468,7 @@ def performance_comparison_graph():
     time4 = []
     for component_stroke_num in range(5,20):
         x.append(component_stroke_num)
-        components = build_random_components(component_stroke_num,500)
+        components = build_random_components(component_stroke_num,100)
         roots = single_stroke_roots + build_random_components(2,50) + build_random_components(3,50) + \
             build_random_components(4,50) + build_random_components(5,50)
         t1 = test_find_combination_function_performance(components,roots,wrap1)
@@ -471,4 +525,21 @@ def performance_comparison_graph():
 # check_correctness()
 
 # test3
-# performance_comparison_graph()
+performance_comparison_graph()
+
+# test4
+# components = build_random_components(15,1000)
+# roots = build_random_components(3,100) + build_random_components(5,100) + build_random_components(4,100)
+# def w1(component: Component,roots: List[Component]):
+#     return find_all_valid_combinations(component,roots,find_slice_v1)
+# def w2(component: Component,roots: List[Component]):
+#     return find_all_valid_combinations_v2(component,roots,find_slice_v1)
+# def w3(component: Component,roots: List[Component]):
+#     return find_all_valid_combinations_v3(component,roots,find_slice_v1)
+# test_find_combination_function_performance(components,roots,w1)
+# clear_all_cache(components)
+# clear_all_cache(roots)
+# test_find_combination_function_performance(components,roots,w2)
+# clear_all_cache(components)
+# clear_all_cache(roots)
+# test_find_combination_function_performance(components,roots,w3)

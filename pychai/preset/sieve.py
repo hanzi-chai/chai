@@ -37,7 +37,6 @@ def topology(component: Component, scheme):
     '''
     功能：估值器，按拆分中各切片的关系估值
     '''
-
     hasConnection = False
     hasCross = False
     l = len(component.strokeList)
