@@ -15,6 +15,7 @@ class Component():
         self.topo_str = topo_str
         self.length = len(stroke_list)
         self.topo_slice_cache: Dict[int, str] = { 1 : '' }
+        self.topo_row_cache: Dict[int, tuple] = { 0 : '' }
 
     def get_topo_slice(self, index_list: List[int]):
         binary_code = self.index_list_to_binary_code(index_list)
@@ -29,6 +30,14 @@ class Component():
                 topo_slice += self.topo_str[offset + index_list[before_n]]
         self.topo_slice_cache[binary_code] = topo_slice
         return topo_slice
+
+    def get_topo_row(self, row: int):
+        if row in self.topo_row_cache:
+            return self.topo_row_cache[row]
+        k = int(row*(row-1)/2)
+        topo_str = self.topo_str[k:k+row]
+        self.topo_row_cache[row] = topo_str
+        return topo_str
 
     def get_topo_simple_slice(self, end_index: int):
         binary_code = 2 ** (end_index + 1) - 1
@@ -55,6 +64,24 @@ class Component():
         if not isinstance(other,Component):
             return NotImplemented
         return self.stroke_list == other.stroke_list and self.topo_str == other.topo_str
+
+class Degenerator:
+    def __init__(self, fieldList: List[Callable[[Component], str]]):
+        self.fieldList = fieldList
+
+    def __call__(self, component: Component) -> str:
+        if len(component.stroke_list) == 1:
+            return component.stroke_list[0]
+        else:
+            return tuple(field(component) for field in self.fieldList)
+
+def featureList(component: Component):
+    return ' '.join([stroke for stroke in component.stroke_list])
+
+def topologyList(component: Component):
+    return ' '.join(' '.join(x) for x in component.topo_str)
+
+degenerator = Degenerator([featureList, topologyList])
 
 def find_slice_v1(component: Component, root: Component):
     '''check topo on each step'''
@@ -204,6 +231,45 @@ def find_slice_v2_1(component: Component, root: Component):
             result.append(component.index_list_to_binary_code(index_list))
     return result
 
+def find_slice_v1_2(component: Component, root: Component):
+    '''整合老架构'''
+    component_length = component.length
+    root_length = root.length
+    result: List[int] = []
+    if component_length < root_length:
+        return result
+    component_stroke_list = component.stroke_list
+    root_stroke_list = root.stroke_list
+    root_first_stroke = root_stroke_list[0]
+    length_limit = component_length - root_length + 1
+    valid_index_lists: List[List[int]] = []
+    for component_index in range(0, length_limit):
+        if component_stroke_list[component_index] == root_first_stroke:
+            valid_index_lists.append([component_index])
+    if len(valid_index_lists) == 0:
+        return result
+    else:
+        for root_index in range(1,root_length):
+            new_valid_index_lists: List[List[int]] = []
+            end_loop = length_limit + root_index
+            for index_list in valid_index_lists:
+                for component_index in range(index_list[-1]+1,end_loop):
+                    if component_stroke_list[component_index] == root_stroke_list[root_index]:
+                        new_index_list = index_list + [component_index]
+                        tmp_c_topo_str = component.get_topo_row(component_index)
+                        c_topo_str_row = ''
+                        for i in index_list:
+                            c_topo_str_row += tmp_c_topo_str[i]
+                        r_topo_str_row = root.get_topo_row(root_index)
+                        if c_topo_str_row == r_topo_str_row:
+                            new_valid_index_lists.append(new_index_list)
+            if len(new_valid_index_lists) == 0:
+                return result
+            else:
+                valid_index_lists = new_valid_index_lists
+    for index_list in valid_index_lists:
+        result.append(component.index_list_to_binary_code(index_list))
+    return result
 
 def find_all_valid_combinations(component: Component, roots: List[Component], find_slice_fn: Callable[[Component,Component],List[int]]):
     slice_binary_code_dict: Dict[int,Component] = {}
@@ -405,17 +471,20 @@ def clear_all_cache(components: List[Component]):
     for component in components:
         component.clear_topo_slice_cache()
 
-def wrap1(component: Component,roots: List[Component]):
+def wrap_v1(component: Component,roots: List[Component]):
     return find_all_valid_combinations(component,roots,find_slice_v1)
 
-def wrap2(component: Component,roots: List[Component]):
+def wrap_v2(component: Component,roots: List[Component]):
     return find_all_valid_combinations(component,roots,find_slice_v2)
 
-def wrap3(component: Component,roots: List[Component]):
+def wrap_v1_1(component: Component,roots: List[Component]):
     return find_all_valid_combinations(component,roots,find_slice_v1_1)
 
-def wrap4(component: Component,roots: List[Component]):
+def wrap_v2_1(component: Component,roots: List[Component]):
     return find_all_valid_combinations(component,roots,find_slice_v2_1)
+
+def wrap_v1_2(component: Component,roots: List[Component]):
+    return find_all_valid_combinations(component,roots,find_slice_v1_2)
 
 def check_correctness():
     # 生成一个“天”字
@@ -429,25 +498,31 @@ def check_correctness():
         Component('点','')           #根“丶”
     ]
     print('-----v1-----')
-    result = wrap1(component,roots)
+    result = wrap_v1(component,roots)
     for scheme_list in result:
         print()
         for r in scheme_list:
             print(r.stroke_list)
     print('-----v2-----')
-    result = wrap2(component,roots)
+    result = wrap_v2(component,roots)
     for scheme_list in result:
         print()
         for r in scheme_list:
             print(r.stroke_list)
-    print('-----v3-----')
-    result = wrap3(component,roots)
+    print('-----v1_1---')
+    result = wrap_v1_1(component,roots)
     for scheme_list in result:
         print()
         for r in scheme_list:
             print(r.stroke_list)
-    print('-----v4-----')
-    result = wrap4(component,roots)
+    print('-----v2_1---')
+    result = wrap_v2_1(component,roots)
+    for scheme_list in result:
+        print()
+        for r in scheme_list:
+            print(r.stroke_list)
+    print('-----v1_2---')
+    result = wrap_v1_2(component,roots)
     for scheme_list in result:
         print()
         for r in scheme_list:
@@ -471,19 +546,19 @@ def performance_comparison_graph():
         components = build_random_components(component_stroke_num,100)
         roots = single_stroke_roots + build_random_components(2,50) + build_random_components(3,50) + \
             build_random_components(4,50) + build_random_components(5,50)
-        t1 = test_find_combination_function_performance(components,roots,wrap1)
+        t1 = test_find_combination_function_performance(components,roots,wrap_v1)
         time1.append(t1)
         clear_all_cache(components)
         clear_all_cache(roots)
-        t2 = test_find_combination_function_performance(components,roots,wrap2)
+        t2 = test_find_combination_function_performance(components,roots,wrap_v2)
         time2.append(t2)
         clear_all_cache(components)
         clear_all_cache(roots)
-        t3 = test_find_combination_function_performance(components,roots,wrap3)
+        t3 = test_find_combination_function_performance(components,roots,wrap_v1_1)
         time3.append(t3)
         clear_all_cache(components)
         clear_all_cache(roots)
-        t4 = test_find_combination_function_performance(components,roots,wrap4)
+        t4 = test_find_combination_function_performance(components,roots,wrap_v2_1)
         time4.append(t4)
     import matplotlib.pyplot as plt
     plt.title('comparison')
@@ -499,33 +574,36 @@ def performance_comparison_graph():
 #### run tests
 
 # test1
-# components = build_random_components(8,1000) + build_random_components(9,1000) + \
-#     build_random_components(14,2000) + build_random_components(15,2000) + \
-#     build_random_components(16,2000) + build_random_components(17,2000) + \
-#     build_random_components(23,1000) + build_random_components(24,1000) + \
-#     build_random_components(26,1000) + build_random_components(28,1000) + \
-#     build_random_components(28,1000) + build_random_components(30,1000)
-# single_stroke_roots = [Component('1',''), Component('2',''), Component('3',''), Component('4',''), \
-#     Component('5',''), Component('6',''), Component('7',''), Component('8',''), Component('9',''), \
-#     Component('0','')]
-# roots = single_stroke_roots + build_random_components(2,50) + build_random_components(3,50) + \
-#     build_random_components(4,60) + build_random_components(5,60)
-# test_slice_function_performance(components,roots,find_slice_v1_check_topo_on_each_step)
-# clear_all_cache(components)
-# clear_all_cache(roots)
-# test_slice_function_performance(components,roots,find_slice_v2_check_on_final_stage)
-# clear_all_cache(components)
-# clear_all_cache(roots)
-# test_slice_function_performance(components,roots,v3)
-# clear_all_cache(components)
-# clear_all_cache(roots)
-# test_slice_function_performance(components,roots,v4)
+components = build_random_components(8,300) + build_random_components(9,300) + \
+    build_random_components(14,300) + build_random_components(15,300) + \
+    build_random_components(16,300) + build_random_components(17,300) + \
+    build_random_components(23,300) + build_random_components(24,300) + \
+    build_random_components(26,300) + build_random_components(28,300) + \
+    build_random_components(28,300) + build_random_components(30,300)
+single_stroke_roots = [Component('1',''), Component('2',''), Component('3',''), Component('4',''), \
+    Component('5',''), Component('6',''), Component('7',''), Component('8',''), Component('9',''), \
+    Component('0','')]
+roots = single_stroke_roots + build_random_components(2,50) + build_random_components(3,50) + \
+    build_random_components(4,60) + build_random_components(5,60)
+test_slice_function_performance(components,roots,find_slice_v1_2)
+clear_all_cache(components)
+clear_all_cache(roots)
+test_slice_function_performance(components,roots,find_slice_v2)
+clear_all_cache(components)
+clear_all_cache(roots)
+test_slice_function_performance(components,roots,find_slice_v1_1)
+clear_all_cache(components)
+clear_all_cache(roots)
+test_slice_function_performance(components,roots,find_slice_v2_1)
+clear_all_cache(components)
+clear_all_cache(roots)
+test_slice_function_performance(components,roots,find_slice_v1)
 
 # test2
 # check_correctness()
 
 # test3
-performance_comparison_graph()
+# performance_comparison_graph()
 
 # test4
 # components = build_random_components(15,1000)
