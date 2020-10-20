@@ -49,5 +49,5 @@ class Wubi98(Sequential):
         return code
 
 # 实例化拆分对象
-wubi98 = Wubi98('templates/wubi98/wubi98.config.yaml')
-wubi98.chai('templates/wubi98/wubi98.result.yaml')
+wubi98 = Wubi98('pychai/examples/wubi98/wubi98.config.yaml')
+wubi98.chai('pychai/examples/wubi98/wubi98.result.yaml')
