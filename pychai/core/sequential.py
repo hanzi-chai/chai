@@ -11,7 +11,7 @@ class Sequential(Chai):
     经典形码
     '''
     @staticmethod
-    def findSliceV1(component: Component, root: Component):
+    def genSliceBinaries(component: Component, root: Component):
         '''找出一个根在一个部件字中的所有有效切片
 
         V1版本，会在每匹配到一个笔画时就检查拓扑。
@@ -50,16 +50,18 @@ class Sequential(Chai):
         for rStrokeIndex in range(1, rootLength):
             nextLevelValidIndexLists: List[List[int]] = []
             limit = lengthLimit + rStrokeIndex # 根据查找的是根剩余的长度调整查找范围
+            rootTopoRowStr = ' '.join(root.topologyMatrix[rStrokeIndex])
             for indexList in validIndexLists:
                 for cpnStrokeIndex in range(indexList[-1]+1, limit):
                     if cpnStrokeList[cpnStrokeIndex].feature == rStrokeList[rStrokeIndex].feature:
                         expandedIndexList = indexList + [cpnStrokeIndex]
                         # 检查拓扑是否符合
-                        cTopo = component.getTopoSliceByIndexes(expandedIndexList)
-                        rTopo = root.getTopoSliceByIndex(rStrokeIndex)
-                        cTopoStr = Component.topoToString(cTopo)
-                        rTopoStr = Component.topoToString(rTopo)
-                        if  cTopoStr == rTopoStr:
+                        cTopoRow = component.topologyMatrix[cpnStrokeIndex]
+                        tmpTopoStr = ''
+                        for i in indexList:
+                            tmpTopoStr += cTopoRow[i] + ' '
+                        tmpTopoStr = tmpTopoStr.strip()
+                        if  tmpTopoStr == rootTopoRowStr:
                             nextLevelValidIndexLists.append(expandedIndexList)
             if len(nextLevelValidIndexLists) == 0:
                 return result
@@ -69,7 +71,7 @@ class Sequential(Chai):
             result.append(component.indexListToBinary(indexList))
         return result
 
-    def findAllValidCombinations(self, component: Component):
+    def genScheme(self, component: Component) -> Tuple[Component, ...]:
         '''找出部件在根集中的所有可行组合
 
         参数:
@@ -78,15 +80,16 @@ class Sequential(Chai):
         输出:
             List[Tuple[int,...]]: 组合列表，根用切片二进制数表示
         '''
-        for root in self.rootList:
-            sliceBinaryList = Sequential.findSliceV1(component, root)
+        binaryDict: Dict[int, Component] = {}
+        for root in self.componentRoot.values():
+            sliceBinaryList = Sequential.genSliceBinaries(component, root.character)
             for sliceBinary in sliceBinaryList:
-                component.powerDict[sliceBinary] = root
-        sliceBinaryList = list(component.powerDict.keys())
+                binaryDict[sliceBinary] = root
+        sliceBinaryList = list(binaryDict.keys())
         listLength = len(sliceBinaryList)
-        result : List[Tuple[int,...]] = []
+        schemeList : List[Tuple[int,...]] = []
         if listLength == 0:
-            return result
+            return schemeList
         sliceBinaryList.sort(reverse=True)
         finishBinary = 2 ** len(component.strokeList) - 1
         def combineNext(
@@ -99,19 +102,20 @@ class Sequential(Chai):
                     newBinary = currentBinary + binary
                     expandedCombination = currentCombination + (binary,)
                     if newBinary == finishBinary:
-                        result.append(expandedCombination)
+                        schemeList.append(expandedCombination)
                     else:
                         combineNext(newBinary, expandedCombination, index + 1)
         combineNext(0, (), 0)
-        return result
+        component.schemeList = schemeList
+        schemeBinary = self.selector(component)
+        return tuple(map(lambda x: binaryDict[x], schemeBinary))
 
     def _getComponentScheme(self, component: Component) -> Tuple[Component, ...]:
-        if component.name in self.rootMap:
-            return (component,)
+        if component.name in self.componentRoot:
+            return (self.componentRoot[component.name],)
         else:
-            component.schemeList = self.findAllValidCombinations(component)
-            return self.selector(component)
+            return self.genScheme(component)
 
-    def _getCompoundScheme(self, compound: Compound) -> Tuple[Component, ...]:
+    def _getCompoundScheme(_, compound: Compound) -> Tuple[Component, ...]:
         firstChild, secondChild = compound.firstChild, compound.secondChild
         return firstChild.scheme + secondChild.scheme

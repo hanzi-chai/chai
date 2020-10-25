@@ -40,7 +40,7 @@ def topology(component: Component, scheme):
     hasConnection = False
     hasCross = False
     l = len(component.strokeList)
-    topoList = component.topoList
+    topologyMatrix = component.topologyMatrix
     schemeParsed = [tuple(k for k in range(l) if (1 << (l - k - 1)) & num) for num in scheme]
     for n, strokeList in enumerate(schemeParsed):
         for n_, strokeList_ in enumerate(schemeParsed):
@@ -49,7 +49,7 @@ def topology(component: Component, scheme):
                 for stroke_ in strokeList_:
                     smaller = min(stroke, stroke_)
                     larger = max(stroke, stroke_)
-                    relation = [x[-1:] for x in topoList[larger][smaller].split('_')]
-                    if '连' in relation: lianFlag = True
-                    if '交' in relation: jiaoFlag = True
-    return 2 if jiaoFlag else 1 if lianFlag else 0
+                    relation = [x[-1:] for x in topologyMatrix[larger][smaller].split('_')]
+                    if '连' in relation: hasConnection = True
+                    if '交' in relation: hasCross = True
+    return 2 if hasCross else 1 if hasConnection else 0

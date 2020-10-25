@@ -1,365 +1,382 @@
+from collections import defaultdict
 import random
 import time
-from typing import Dict, List, Callable
-from collections import deque
+from typing import DefaultDict, Dict, List, Callable, Tuple
 
 class Component():
+    '''测试用的Component对象
+
+    属性：
+        strokeList: 模拟笔画序列。字符串表示，一位为一笔。
+        topoStr: 模拟拓扑序列。字符串表示，拓扑关系矩阵下三角的合并。
+        length: 笔画序列长度。
+        topoSliceCache: 拓扑切片的缓存。
+        topoRowCache: 拓扑行切片的缓存
     '''
-    测试用的Component对象
+    def __init__(self, strokeList: str, topoStr: str):
+        self.strokeList     = strokeList
+        self.topoStr        = topoStr
+        self.length         = len(strokeList)
+        self.topoSliceCache = { 1 : '' }
+        self.topoRowCache   = { 0 : '' }
 
-    属性：(累了)
-
-    '''
-    def __init__(self, stroke_list: str, topo_str: str):
-        self.stroke_list = stroke_list
-        self.topo_str = topo_str
-        self.length = len(stroke_list)
-        self.topo_slice_cache: Dict[int, str] = { 1 : '' }
-        self.topo_row_cache: Dict[int, tuple] = { 0 : '' }
-
-    def get_topo_slice(self, index_list: List[int]):
-        binary_code = self.index_list_to_binary_code(index_list)
-        if binary_code in self.topo_slice_cache:
-            return self.topo_slice_cache[binary_code]
-        topo_slice = ''
-        length = len(index_list)
+    def getTopoSlice(self, indexList: List[int]):
+        binaryCode = self.indexListToBinaryCode(indexList)
+        if binaryCode in self.topoSliceCache:
+            return self.topoSliceCache[binaryCode]
+        topoSlice = ''
+        length = len(indexList)
         for n in range(1, length):
-            index = index_list[n]
+            index = indexList[n]
             offset = int(index * (index - 1) / 2)
-            for before_n in range(0, n):
-                topo_slice += self.topo_str[offset + index_list[before_n]]
-        self.topo_slice_cache[binary_code] = topo_slice
-        return topo_slice
+            for beforeN in range(0, n):
+                topoSlice += self.topoStr[offset + indexList[beforeN]]
+        self.topoSliceCache[binaryCode] = topoSlice
+        return topoSlice
 
-    def get_topo_row(self, row: int):
-        if row in self.topo_row_cache:
-            return self.topo_row_cache[row]
-        k = int(row*(row-1)/2)
-        topo_str = self.topo_str[k:k+row]
-        self.topo_row_cache[row] = topo_str
-        return topo_str
+    def getTopoRow(self, row: int):
+        if row in self.topoRowCache:
+            return self.topoRowCache[row]
+        k = int(row * (row - 1) / 2)
+        topoStr = self.topoStr[k:k+row]
+        self.topoRowCache[row] = topoStr
+        return topoStr
 
-    def get_topo_simple_slice(self, end_index: int):
-        binary_code = 2 ** (end_index + 1) - 1
-        if binary_code in self.topo_slice_cache:
-            return self.topo_slice_cache[binary_code]
-        topo_slice = self.topo_str[ : int((end_index * (end_index + 1)) / 2)]
-        self.topo_slice_cache[binary_code] = topo_slice
-        return topo_slice
-
-    def index_list_to_binary_code(self, index_list: List[int]):
+    def indexListToBinaryCode(self, indexList: List[int]):
         length = self.length
-        binary_code: int = 0
-        for index in index_list:
-            binary_code += 1 << (length - index - 1)
-        return binary_code
+        binary = 0
+        for index in indexList:
+            binary += 1 << (length - index - 1)
+        return binary
 
-    def clear_topo_slice_cache(self):
-        self.topo_slice_cache = { 1 : '' }
+    def clearCache(self):
+        self.topoRowCache = { 0 : '' }
+        self.topoSliceCache = { 1 : '' }
 
     def __str__(self):
-        return f'list:{self.stroke_list}\ntopo:{self.topo_str}'
+        return f'list:{self.strokeList} topo:{self.topoStr}'
 
     def __eq__(self, other):
         if not isinstance(other,Component):
             return NotImplemented
-        return self.stroke_list == other.stroke_list and self.topo_str == other.topo_str
+        return self.strokeList == other.strokeList and self.topoStr == other.topoStr
 
-class Degenerator:
-    def __init__(self, fieldList: List[Callable[[Component], str]]):
-        self.fieldList = fieldList
-
-    def __call__(self, component: Component) -> str:
-        if len(component.stroke_list) == 1:
-            return component.stroke_list[0]
-        else:
-            return tuple(field(component) for field in self.fieldList)
-
-def featureList(component: Component):
-    return ' '.join([stroke for stroke in component.stroke_list])
-
-def topologyList(component: Component):
-    return ' '.join(' '.join(x) for x in component.topo_str)
-
-degenerator = Degenerator([featureList, topologyList])
-
-def find_slice_v1(component: Component, root: Component):
+def findSliceV1(component: Component, root: Component):
     '''check topo on each step'''
-    component_length = component.length
-    root_length = root.length
+    cLength = component.length
+    rLength = root.length
     result: List[int] = []
-    if component_length < root_length:
+    if cLength < rLength:
         return result
-    component_stroke_list = component.stroke_list
-    root_stroke_list = root.stroke_list
-    root_first_stroke = root_stroke_list[0]
-    length_limit = component_length - root_length + 1
-    valid_index_lists: List[List[int]] = []
-    for component_index in range(0, length_limit):
-        if component_stroke_list[component_index] == root_first_stroke:
-            valid_index_lists.append([component_index])
-    if len(valid_index_lists) == 0:
+    cStrokeList = component.strokeList
+    rStrokeList = root.strokeList
+    rFirstStroke = rStrokeList[0]
+    lengthLimit = cLength - rLength + 1
+    validIndexLists: List[List[int]] = []
+    for cIndex in range(0, lengthLimit):
+        if cStrokeList[cIndex] == rFirstStroke:
+            validIndexLists.append([cIndex])
+    if len(validIndexLists) == 0:
         return result
-    else:
-        for root_index in range(1,root_length):
-            new_valid_index_lists: List[List[int]] = []
-            end_loop = length_limit + root_index
-            for index_list in valid_index_lists:
-                for component_index in range(index_list[-1]+1,end_loop):
-                    if component_stroke_list[component_index] == root_stroke_list[root_index]:
-                        new_index_list = index_list + [component_index]
-                        if component.get_topo_slice(new_index_list) == root.get_topo_simple_slice(root_index):
-                            new_valid_index_lists.append(new_index_list)
-            if len(new_valid_index_lists) == 0:
-                return result
-            else:
-                valid_index_lists = new_valid_index_lists
-    for index_list in valid_index_lists:
-        result.append(component.index_list_to_binary_code(index_list))
+    for rIndex in range(1,rLength):
+        newValidIndexLists: List[List[int]] = []
+        end = lengthLimit + rIndex
+        for indexList in validIndexLists:
+            for cIndex in range(indexList[-1]+1,end):
+                if cStrokeList[cIndex] == rStrokeList[rIndex]:
+                    tmpCTopoStr = component.getTopoRow(cIndex)
+                    cTopoStrRow = ''
+                    for i in indexList:
+                        cTopoStrRow += tmpCTopoStr[i]
+                    rTopoStrRow = root.getTopoRow(rIndex)
+                    if cTopoStrRow == rTopoStrRow:
+                        newValidIndexLists.append(indexList + [cIndex])
+        if len(newValidIndexLists) == 0:
+            return result
+        else:
+            validIndexLists = newValidIndexLists
+    for indexList in validIndexLists:
+        result.append(component.indexListToBinaryCode(indexList))
     return result
 
-def find_slice_v1_1(component: Component, root: Component):
-    '''v1基础上加上提前终止判断语句'''
-    component_length = component.length
-    root_length = root.length
+def findSliceV1_1(component: Component, root: Component):
+    '''分段查找'''
+    cLength = component.length
+    rLength = root.length
     result: List[int] = []
-    if component_length < root_length:
+    if cLength < rLength:
         return result
-    component_stroke_list = component.stroke_list
-    root_stroke_list = root.stroke_list
-    root_first_stroke = root_stroke_list[0]
-    length_limit = component_length - root_length + 1
-    valid_index_lists: List[List[int]] = []
-    for component_index in range(0, length_limit):
-        if component_stroke_list[component_index] == root_first_stroke:
-            valid_index_lists.append([component_index])
-    if len(valid_index_lists) == 0:
+    cStrokeList = component.strokeList
+    rStrokeList = root.strokeList
+    rFirstStroke = rStrokeList[0]
+    end = cLength - rLength + 1
+    validIndexLists: List[List[int]] = []
+    for cIndex in range(0, end):
+        if cStrokeList[cIndex] == rFirstStroke:
+            validIndexLists.append([cIndex])
+    if len(validIndexLists) == 0:
         return result
-    else:
-        for root_index in range(1,root_length):
-            new_valid_index_lists: List[List[int]] = []
-            end_loop = length_limit + root_index
-            for index_list in valid_index_lists:
-                not_found: bool = True
-                for component_index in range(index_list[-1]+1,end_loop):
-                    if component_stroke_list[component_index] == root_stroke_list[root_index]:
-                        not_found = False
-                        new_index_list = index_list + [component_index]
-                        if component.get_topo_slice(new_index_list) == root.get_topo_simple_slice(root_index):
-                            new_valid_index_lists.append(new_index_list)
-                if not_found:
-                    break
-            if len(new_valid_index_lists) == 0:
-                return result
-            else:
-                valid_index_lists = new_valid_index_lists
-    for index_list in valid_index_lists:
-        result.append(component.index_list_to_binary_code(index_list))
+    for rIndex in range(1, rLength):
+        newValidIndexLists: List[List[int]] = []
+        end = end + 1
+        range_ = [x[-1] + 1 for x in validIndexLists] + [end]
+        for i in range(0, len(range_) - 1):
+            for cIndex in range(range_[i],range_[i+1]):
+                if cStrokeList[cIndex] == rStrokeList[rIndex]:
+                    tmpCTopoStr = component.getTopoRow(cIndex)
+                    rTopoStrRow = root.getTopoRow(rIndex)
+                    for j in range(0, i + 1):
+                        indexList = validIndexLists[j]
+                        cTopoStrRow = ''
+                        for idx in indexList:
+                            cTopoStrRow += tmpCTopoStr[idx]
+                        if cTopoStrRow == rTopoStrRow:
+                            newValidIndexLists.append(indexList + [cIndex])
+        if len(newValidIndexLists) == 0:
+            return result
+        else:
+            validIndexLists = newValidIndexLists
+    for indexList in validIndexLists:
+        result.append(component.indexListToBinaryCode(indexList))
     return result
 
-def find_slice_v2(component: Component, root: Component):
+def findSliceV2(component: Component, root: Component):
     '''check topo on final stage'''
-    component_length = component.length
-    root_length = root.length
+    cLength = component.length
+    rLength = root.length
     result: List[int] = []
-    if component_length < root_length:
+    if cLength < rLength:
         return result
-    component_stroke_list = component.stroke_list
-    root_stroke_list = root.stroke_list
-    length_limit = component_length - root_length + 1
-    root_first_stroke = root_stroke_list[0]
-    valid_index_lists: List[List[int]] = []
-    for component_index in range(0,length_limit):
-        if component_stroke_list[component_index]==root_first_stroke:
-            valid_index_lists.append([component_index])
-    if len(valid_index_lists)==0:
+    cStrokeList = component.strokeList
+    rStrokeList = root.strokeList
+    lengthLimit = cLength - rLength + 1
+    rFirstStroke = rStrokeList[0]
+    validIndexLists: List[List[int]] = []
+    for cIndex in range(0,lengthLimit):
+        if cStrokeList[cIndex]==rFirstStroke:
+            validIndexLists.append([cIndex])
+    if len(validIndexLists)==0:
         return result
     else:
-        for root_index in range(1, root_length):
-            new_valid_index_lists: List[List[int]] = []
-            end_loop = length_limit + root_index
-            for index_list in valid_index_lists:
-                for component_index in range(index_list[-1] + 1,end_loop):
-                    if component_stroke_list[component_index] == root_stroke_list[root_index]:
-                        new_index_list = index_list + [component_index]
-                        new_valid_index_lists.append(new_index_list)
-            if len(new_valid_index_lists) == 0:
+        for rIndex in range(1, rLength):
+            newValidIndexLists: List[List[int]] = []
+            end = lengthLimit + rIndex
+            for indexList in validIndexLists:
+                for cIndex in range(indexList[-1] + 1,end):
+                    if cStrokeList[cIndex] == rStrokeList[rIndex]:
+                        newIndexList = indexList + [cIndex]
+                        newValidIndexLists.append(newIndexList)
+            if len(newValidIndexLists) == 0:
                 return result
             else:
-                valid_index_lists = new_valid_index_lists
-    for index_list in valid_index_lists:
-        if component.get_topo_slice(index_list) == root.topo_str:
-            result.append(component.index_list_to_binary_code(index_list))
+                validIndexLists = newValidIndexLists
+    for indexList in validIndexLists:
+        if component.getTopoSlice(indexList) == root.topoStr:
+            result.append(component.indexListToBinaryCode(indexList))
     return result
 
-def find_slice_v2_1(component: Component, root: Component):
-    '''v2基础上加上提前终止判断语句'''
-    component_length = component.length
-    root_length = root.length
+def findSliceV2_1(component: Component, root: Component):
+    '''分段查找'''
+    cLength = component.length
+    rLength = root.length
     result: List[int] = []
-    if component_length < root_length:
+    if cLength < rLength:
         return result
-    component_stroke_list = component.stroke_list
-    root_stroke_list = root.stroke_list
-    length_limit = component_length - root_length + 1
-    root_first_stroke = root_stroke_list[0]
-    valid_index_lists: List[List[int]] = []
-    for component_index in range(0,length_limit):
-        if component_stroke_list[component_index]==root_first_stroke:
-            valid_index_lists.append([component_index])
-    if len(valid_index_lists)==0:
+    cStrokeList = component.strokeList
+    rStrokeList = root.strokeList
+    end = cLength - rLength + 1
+    rFirstStroke = rStrokeList[0]
+    validIndexLists: List[List[int]] = []
+    for cIndex in range(0,end):
+        if cStrokeList[cIndex]==rFirstStroke:
+            validIndexLists.append([cIndex])
+    if len(validIndexLists)==0:
         return result
-    else:
-        for root_index in range(1, root_length):
-            new_valid_index_lists: List[List[int]] = []
-            end_loop = length_limit + root_index
-            for index_list in valid_index_lists:
-                not_found: bool = True
-                for component_index in range(index_list[-1] + 1,end_loop):
-                    if component_stroke_list[component_index] == root_stroke_list[root_index]:
-                        not_found = False
-                        new_index_list = index_list + [component_index]
-                        new_valid_index_lists.append(new_index_list)
-                if not_found:
-                    break
-            if len(new_valid_index_lists) == 0:
-                return result
-            else:
-                valid_index_lists = new_valid_index_lists
-    for index_list in valid_index_lists:
-        if component.get_topo_slice(index_list) == root.topo_str:
-            result.append(component.index_list_to_binary_code(index_list))
+    for rIndex in range(1, rLength):
+        newValidIndexLists: List[List[int]] = []
+        end = end + 1
+        range_ = [x[-1] + 1 for x in validIndexLists] + [end]
+        for i in range(0, len(range_) - 1):
+            for cIndex in range(range_[i],range_[i+1]):
+                if cStrokeList[cIndex] == rStrokeList[rIndex]:
+                    for j in range(0, i + 1):
+                        newIndexList = validIndexLists[j] + [cIndex]
+                        newValidIndexLists.append(newIndexList)
+        if len(newValidIndexLists) == 0:
+            return result
+        else:
+            validIndexLists = newValidIndexLists
+    for indexList in validIndexLists:
+        if component.getTopoSlice(indexList) == root.topoStr:
+            result.append(component.indexListToBinaryCode(indexList))
     return result
 
-def find_slice_v1_2(component: Component, root: Component):
-    '''整合老架构'''
-    component_length = component.length
-    root_length = root.length
-    result: List[int] = []
-    if component_length < root_length:
-        return result
-    component_stroke_list = component.stroke_list
-    root_stroke_list = root.stroke_list
-    root_first_stroke = root_stroke_list[0]
-    length_limit = component_length - root_length + 1
-    valid_index_lists: List[List[int]] = []
-    for component_index in range(0, length_limit):
-        if component_stroke_list[component_index] == root_first_stroke:
-            valid_index_lists.append([component_index])
-    if len(valid_index_lists) == 0:
-        return result
-    else:
-        for root_index in range(1,root_length):
-            new_valid_index_lists: List[List[int]] = []
-            end_loop = length_limit + root_index
-            for index_list in valid_index_lists:
-                for component_index in range(index_list[-1]+1,end_loop):
-                    if component_stroke_list[component_index] == root_stroke_list[root_index]:
-                        new_index_list = index_list + [component_index]
-                        tmp_c_topo_str = component.get_topo_row(component_index)
-                        c_topo_str_row = ''
-                        for i in index_list:
-                            c_topo_str_row += tmp_c_topo_str[i]
-                        r_topo_str_row = root.get_topo_row(root_index)
-                        if c_topo_str_row == r_topo_str_row:
-                            new_valid_index_lists.append(new_index_list)
-            if len(new_valid_index_lists) == 0:
-                return result
-            else:
-                valid_index_lists = new_valid_index_lists
-    for index_list in valid_index_lists:
-        result.append(component.index_list_to_binary_code(index_list))
-    return result
-
-def find_all_valid_combinations(component: Component, roots: List[Component], find_slice_fn: Callable[[Component,Component],List[int]]):
-    slice_binary_code_dict: Dict[int,Component] = {}
-    for root in roots:
-        slice_binary_code_list = find_slice_fn(component, root)
-        for slice_binary_code in slice_binary_code_list:
-            slice_binary_code_dict[slice_binary_code] = root
-    slice_binary_code_list = list(slice_binary_code_dict.keys())
-    slice_binary_code_list_length = len(slice_binary_code_list)
-    result : List[List[Component]] = []
-    if slice_binary_code_list_length == 0:
-        return result
-    slice_binary_code_list.sort(reverse=True)
-    def inner(current_combination_state_binary_code: int,current_stroke_to_find: int, current_combination_list: List[Component], start_searching_from_index: int):
-        not_found_current_stroke_to_find_flag = True
-        while current_stroke_to_find!=0 and not_found_current_stroke_to_find_flag:
-            for index in range(start_searching_from_index,slice_binary_code_list_length):
-                binary_code = slice_binary_code_list[index]
-                if current_stroke_to_find & binary_code != 0 and current_combination_state_binary_code & binary_code == 0:
-                    not_found_current_stroke_to_find_flag = False
-                    new_combination_state_binary_code = current_combination_state_binary_code + binary_code
-                    new_combination_list = current_combination_list + [slice_binary_code_dict[binary_code]]
-                    next_stroke_to_find = current_stroke_to_find >> 1
-                    while next_stroke_to_find & new_combination_state_binary_code != 0:
-                        next_stroke_to_find = next_stroke_to_find >> 1
-                    if next_stroke_to_find==0:
-                        result.append(new_combination_list)
+def findSliceV3(component: Component, root: Component):
+    '''generator version'''
+    cStrokeList = component.strokeList
+    rStrokeList = root.strokeList
+    def gener(start, end, rStrokeIndex, indexList):
+        start_ = start
+        while start_ <= end:
+            iIndexList = indexList.copy()
+            try:
+                index = cStrokeList[start_:end+1].index(rStrokeList[rStrokeIndex]) + start_
+                start_ = index + 1
+                tmpCTopoStr = component.getTopoRow(index)
+                cTopoStrRow = ''
+                for i in iIndexList:
+                    cTopoStrRow += tmpCTopoStr[i]
+                rTopoStrRow = root.getTopoRow(rStrokeIndex)
+                if cTopoStrRow == rTopoStrRow:
+                    iIndexList.append(index)
+                    if rStrokeIndex < len(rStrokeList) - 1:
+                        for binary in gener(start_, end+1, rStrokeIndex+1, iIndexList.copy()):
+                            yield binary
                     else:
-                        inner(new_combination_state_binary_code, next_stroke_to_find, new_combination_list, index + 1)
-            if not_found_current_stroke_to_find_flag:
-                current_stroke_to_find = current_stroke_to_find>>1
-    inner(0, 1 << (component.length - 1), [], 0)
-    return result
+                        yield component.indexListToBinaryCode(iIndexList)
+            except:
+                break
+    return gener(0, len(cStrokeList) - len(rStrokeList), 0, [])
 
-def find_all_valid_combinations_v2(component: Component, roots: List[Component], find_slice_fn: Callable[[Component,Component],List[int]]):
-    slice_binary_code_dict: Dict[int,Component] = {}
+def findAllValidCombinations(
+    component: Component,
+    roots: List[Component],
+    findSliceFn: Callable[[Component,Component],List[int]]):
+    binaryDict: Dict[int,Component] = {}
     for root in roots:
-        slice_binary_code_list = find_slice_fn(component, root)
-        for slice_binary_code in slice_binary_code_list:
-            slice_binary_code_dict[slice_binary_code] = root
-    slice_binary_code_list = list(slice_binary_code_dict.keys())
-    slice_binary_code_list_length = len(slice_binary_code_list)
-    result : List[List[Component]] = []
-    if slice_binary_code_list_length == 0:
-        return result
-    slice_binary_code_list.sort(reverse=True)
-    full_mask = 2 ** len(component.stroke_list) - 1
-    def inner(current_combination_state_binary_code: int, current_combination_list: List[Component], start_searching_from_index: int):
-        for index in range(start_searching_from_index, slice_binary_code_list_length):
-            binary_code = slice_binary_code_list[index]
-            if current_combination_state_binary_code & binary_code == 0:
-                new_combination_state_binary_code = current_combination_state_binary_code + binary_code
-                new_combination_list = current_combination_list + [slice_binary_code_dict[binary_code]]
-                if new_combination_state_binary_code==full_mask:
-                    result.append(new_combination_list)
+        sliceBinaryList = findSliceFn(component, root)
+        for sliceBinary in sliceBinaryList:
+            binaryDict[sliceBinary] = root
+    sliceBinaryList = list(binaryDict.keys())
+    listLength = len(sliceBinaryList)
+    tmpResult : List[Tuple[int,...]] = []
+    if listLength == 0:
+        return tmpResult
+    sliceBinaryList.sort(reverse=True)
+    finishBinary = 2 ** len(component.strokeList) - 1
+    firstStrokeBinary = 2 ** (len(component.strokeList) - 1)
+    def combineNext(
+        currentBinary: int,
+        currentCombination: Tuple[int,...],
+        startFromIndex: int):
+        for index in range(startFromIndex, listLength):
+            binary = sliceBinaryList[index]
+            if currentBinary & binary == 0:
+                newBinary = currentBinary + binary
+                expandedCombination = currentCombination + (binary,)
+                if newBinary == finishBinary:
+                    tmpResult.append(expandedCombination)
                 else:
-                    inner(new_combination_state_binary_code, new_combination_list, index + 1)
-    inner(0, [], 0)
+                    combineNext(newBinary, expandedCombination, index + 1)
+    for index in range(0, listLength):
+        b = sliceBinaryList[index]
+        if not b & firstStrokeBinary:
+            break
+        combineNext(b, (b,), index+1)
+    result = []
+    for t in tmpResult:
+        result.append((binaryDict[i] for i in t))
     return result
 
-def find_all_valid_combinations_v3(component: Component, roots: List[Component], find_slice_fn: Callable[[Component,Component],List[int]]):
-    slice_binary_code_dict: Dict[int,Component] = {}
+def findAllValidCombinationsV2(
+    component: Component,
+    roots: List[Component],
+    findSliceFn: Callable[[Component,Component],List[int]]):
+    '''binary search version'''
+    binaryDict: Dict[int,Component] = {}
     for root in roots:
-        slice_binary_code_list = find_slice_fn(component, root)
-        for slice_binary_code in slice_binary_code_list:
-            slice_binary_code_dict[slice_binary_code] = root
-    def __nextRoot(n) -> List[int]:
-        powerList = [0]
-        while n: # 直到当前序列所有「1」位都被置0之前，做：
-            t = n & (n - 1)
-            m = n - t
-            n = t
-            powerList = powerList + [x + m for x in powerList]
-        return powerList[len(powerList)//2:]
-    l = len(component.stroke_list)
-    queue = deque([(2**l - 1, )])
-    schemeList = []
-    while queue:
-        scheme = queue.popleft()
-        residue = scheme[-1]
-        rootList = list(filter(lambda x: slice_binary_code_dict.get(x), __nextRoot(residue)))
-        for root in rootList:
-            if root != residue: # 没拆完
-                queue.append(scheme[:-1] + (root, residue - root))
+        sliceBinaryList = findSliceFn(component, root)
+        for sliceBinary in sliceBinaryList:
+            binaryDict[sliceBinary] = root
+    sliceBinaryList = list(binaryDict.keys())
+    listLength = len(sliceBinaryList)
+    tmpResult : List[Tuple[int,...]] = []
+    if listLength == 0:
+        return tmpResult
+    sliceBinaryList.sort(reverse=True)
+    cLength = len(component.strokeList)
+    finishBinary = 2 ** cLength - 1
+    def binarySearch(target: int):
+        front = 0
+        rear = listLength - 1
+        while front < rear:
+            mid = (front + rear) // 2
+            if sliceBinaryList[mid] > target:
+                front = mid + 1
             else:
-                schemeList.append([slice_binary_code_dict[x] for x in scheme])
-    return schemeList
+                rear = mid
+        return front
+    def first1(binary: int):
+        front = cLength - 1
+        rear = 0
+        while front > rear:
+            mid = (front + rear) // 2 + 1
+            if 2 ** mid > binary:
+                front = mid - 1
+            else:
+                rear = mid
+        return 2 ** front
+    def combineNext(
+        currentBinary: int,
+        currentCombination: Tuple[int,...]):
+        empty = finishBinary - currentBinary
+        firstEmpty = first1(empty)
+        start = binarySearch(empty)
+        end = binarySearch(firstEmpty)
+        for index in range(start, end+1):
+            binary = sliceBinaryList[index]
+            if currentBinary & binary == 0:
+                newBinary = currentBinary + binary
+                expandedCombination = currentCombination + (binary,)
+                if newBinary == finishBinary:
+                    tmpResult.append(expandedCombination)
+                else:
+                    combineNext(newBinary, expandedCombination)
+    combineNext(0,())
+    result: List[Tuple[Component,...]] = []
+    for t in tmpResult:
+        result.append((binaryDict[i] for i in t))
+    return result
+
+def findAllValidCombinationsV3(
+    component: Component,
+    roots: List[Component],
+    findSliceFn: Callable[[Component,Component],List[int]]):
+    sliceBinaryList = []
+    binaryDict = {}
+    for root in roots:
+        sliceBinaryList = findSliceFn(component, root)
+        for sliceBinary in sliceBinaryList:
+            binaryDict[sliceBinary] = root
+        sliceBinaryList.extend(sliceBinaryList)
+    sbd = defaultdict(list)
+    for i in sliceBinaryList:
+        sbd[len(bin(i))].append(i)
+    finishBinary = 2 ** len(component.strokeList) - 1
+    tmpResult: List[Tuple[int,...]] = []
+    def combineNext(
+        currentBinary: int,
+        currentCombination: Tuple[int,...],
+        tryFrom: list):
+        for binary in tryFrom:
+            if currentBinary & binary != 0:
+                continue
+            nextCombination = currentCombination + (binary,)
+            nextBinary = currentBinary + binary
+            if nextBinary == finishBinary:
+                tmpResult.append(nextCombination)
+            else:
+                residue = finishBinary - nextBinary
+                combineNext(nextBinary, nextCombination, sbd[len(residue)])
+    if sbd:
+        combineNext(0,(),sbd[len(bin(finishBinary))])
+    result: List[Tuple[Component,...]] = []
+    for t in tmpResult:
+        result.append((binaryDict[i] for i in t))
+    return result
 
 #### test utils
-def random_stroke_list(n: int) -> str:
+def randomStrokeList(n: int) -> str:
     '''随机生成n笔画字的笔画序列。笔画用数字字符串表示。
 
     参数：
@@ -370,40 +387,43 @@ def random_stroke_list(n: int) -> str:
     '''
     return str(random.randint(10**(n-1),10**(n)-1))
 
-def random_topo_str(n: int) -> str:
+def randomTopoStr(n: int) -> str:
     '''随机生成 n 笔字的 topo 序列。等效于把 pychai 当中的 topologyMatrix 合成一串字符串。
 
     参数：
         n：笔画序列的长度
 
     输出：
-        仅由'0','1','2'组成的字符串，长度为 (n*(n-1))/2
+        仅由'0','1','2','3','4'组成的字符串，长度为 (n*(n-1))/2
     '''
-    return ''.join([ str(random.randint(0,2)) for _ in range(int((n*(n-1))/2))])
+    return ''.join([ str(random.randint(0,4)) for _ in range(int((n*(n-1))/2))])
 
-def build_random_components(stroke_length: int, how_many: int):
+def randomComponents(strokeLength: int, howMany: int):
     '''批量生成随机的、属性不重复的 Component
 
     参数：
-        stroke_length：生成 Component 的笔画长度。
-        how_many：生成的个数
+        strokeLength：生成 Component 的笔画长度。
+        howMany：生成的个数
 
     输出：
         包含所有随机生成 Component 的列表
     '''
-    components: List[Component] = [Component(random_stroke_list(stroke_length),random_topo_str(stroke_length))]
+    components = [Component(randomStrokeList(strokeLength),randomTopoStr(strokeLength))]
     count = 0
-    while count<how_many:
-        new_component = Component(random_stroke_list(stroke_length),random_topo_str(stroke_length))
+    while count < howMany:
+        newComponent = Component(randomStrokeList(strokeLength),randomTopoStr(strokeLength))
         for component in components:
-            if component==new_component:
+            if component == newComponent:
                 break
             else:
-                components.append(new_component)
+                components.append(newComponent)
                 count+=1
     return components
 
-def test_slice_function_performance(components: List[Component], roots: List[Component], test_fn: Callable[[Component,Component],List[int]]):
+def testSliceFn(
+    components: List[Component],
+    roots: List[Component],
+    testFn: Callable[[Component,Component],List[int]]):
     '''测试「取切片函数」运行效率的函数
 
     无输出。在控制台打印相关数据。
@@ -411,33 +431,33 @@ def test_slice_function_performance(components: List[Component], roots: List[Com
     参数：
         components：待拆分的字集合
         roots：字根集合
-        test_fn：被测试的「取切片函数」
+        testFn：被测试的「取切片函数」
     '''
-    total_times = len(components) * len(roots)
-    success_times = 0
-    failure_elapsed = 0
-    success_elapsed = 0
+    totalTimes = len(components) * len(roots)
+    successTimes = 0
+    failureElapsed = 0
+    successElapsed = 0
     start = time.time()
     for component in components:
         for root in roots:
             t = time.time()
-            result = test_fn(component,root)
+            result = list(testFn(component,root))
             elapsed = time.time() - t
             if len(result)>0:
-                success_times += 1
-                success_elapsed += elapsed
+                successTimes += 1
+                successElapsed += elapsed
             else:
-                failure_elapsed += elapsed
-    total_elapsed = time.time() - start
-    failure_times = total_times - success_times
-    success_avg = success_elapsed/success_times*1000000 if success_times!=0 else 0
-    failure_avg = failure_elapsed/failure_times*1000000 if failure_times!=0 else 0
-    print(f'success:{success_times}\nsuccess_avg:{success_avg}')
-    print(f'failure:{total_times-success_times}\nfailure_avg:{failure_avg}')
-    print(f'total_time_elapsed:{int(total_elapsed*1000)}ms, times:{total_times}')
-    print()
+                failureElapsed += elapsed
+    totalElapsed = time.time() - start
+    failureTimes = totalTimes - successTimes
+    successAvg = successElapsed/successTimes*1000000 if successTimes!=0 else 0
+    failureAvg = failureElapsed/failureTimes*1000000 if failureTimes!=0 else 0
+    print(f'success:{successTimes:d} successAvg:{successAvg:.2f} failure:{(totalTimes-successTimes):d} failureAvg:{failureAvg:.2f} totalTimeElapsed:{int(totalElapsed*1000):d}ms')
 
-def test_find_combination_function_performance(components: List[Component], roots: List[Component], test_fn: Callable[[Component,List[Component]],list]):
+def testCombinationFn(
+    components: List[Component],
+    roots: List[Component],
+    testFn: Callable[[Component,List[Component]],list]):
     '''测试「查找可行根组合函数」运行效率的函数
 
     输出耗时(ms)。并在控制台打印数据。
@@ -445,127 +465,100 @@ def test_find_combination_function_performance(components: List[Component], root
     参数：
         components：待拆字集合
         roots：字根集合
-        test_fn：被测试的「查找可行根组合函数」
+        testFn：被测试的「查找可行根组合函数」
 
     输出：
         测试总用时(ms)
     '''
-    success_elapsed = 0
-    failure_elapsed = 0
+    successElapsed = 0
+    failureElapsed = 0
     start = time.time()
     for component in components:
         t1 = time.time()
-        r = test_fn(component,roots)
+        r = testFn(component,roots)
         elapsed = time.time() - t1
         if len(r)>0:
-            success_elapsed += elapsed
+            successElapsed += elapsed
         else:
-            failure_elapsed += elapsed
-    total_elapsed = time.time() - start
-    print(f'total_time_elapsed:{int(total_elapsed*1000)}ms')
-    print()
-    return int(total_elapsed*1000)
+            failureElapsed += elapsed
+    totalElapsed = time.time() - start
+    print(f'totalTimeElapsed:{int(totalElapsed*1000)}ms')
+    return int(totalElapsed*1000)
 
-def clear_all_cache(components: List[Component]):
+def clearAllCache(components: List[Component]):
     '''清除所有 component 的 topo 切片缓存'''
     for component in components:
-        component.clear_topo_slice_cache()
+        component.clearCache()
 
-def wrap_v1(component: Component,roots: List[Component]):
-    return find_all_valid_combinations(component,roots,find_slice_v1)
-
-def wrap_v2(component: Component,roots: List[Component]):
-    return find_all_valid_combinations(component,roots,find_slice_v2)
-
-def wrap_v1_1(component: Component,roots: List[Component]):
-    return find_all_valid_combinations(component,roots,find_slice_v1_1)
-
-def wrap_v2_1(component: Component,roots: List[Component]):
-    return find_all_valid_combinations(component,roots,find_slice_v2_1)
-
-def wrap_v1_2(component: Component,roots: List[Component]):
-    return find_all_valid_combinations(component,roots,find_slice_v1_2)
-
-def check_correctness():
+def checkCorrectness(*fns: Callable[[Component,Component],List[List[Component]]]):
     # 生成一个“天”字
     component = Component('横横撇点','散连交散连连')
     roots = [
-        Component('横',''),         #根“一”
-        Component('横横','散'),      #根“二”
-        Component('撇点','连'),      #根“人”
+        Component('横',''),          #根“一”
+        Component('横横','散'),       #根“二”
+        Component('撇点','连'),       #根“人”
         Component('横撇点','交连连'),  #根“大”
         Component('撇',''),          #根“丿”
         Component('点','')           #根“丶”
     ]
-    print('-----v1-----')
-    result = wrap_v1(component,roots)
-    for scheme_list in result:
-        print()
-        for r in scheme_list:
-            print(r.stroke_list)
-    print('-----v2-----')
-    result = wrap_v2(component,roots)
-    for scheme_list in result:
-        print()
-        for r in scheme_list:
-            print(r.stroke_list)
-    print('-----v1_1---')
-    result = wrap_v1_1(component,roots)
-    for scheme_list in result:
-        print()
-        for r in scheme_list:
-            print(r.stroke_list)
-    print('-----v2_1---')
-    result = wrap_v2_1(component,roots)
-    for scheme_list in result:
-        print()
-        for r in scheme_list:
-            print(r.stroke_list)
-    print('-----v1_2---')
-    result = wrap_v1_2(component,roots)
-    for scheme_list in result:
-        print()
-        for r in scheme_list:
-            print(r.stroke_list)
+    for fn in fns:
+        print('-----------')
+        result = fn(component,roots)
+        for schemeList in result:
+            for r in schemeList:
+                print(r.strokeList)
+            print()
+        print('Finished')
 
-def performance_comparison_graph():
-    # components = build_random_components(2,49) + build_random_components(3,76) + build_random_components(4,106) + \
-    #     build_random_components(5,79) + build_random_components(6,55) + build_random_components(7,43) + \
-    #     build_random_components(8,35) + build_random_components(9,18) + build_random_components(10,10) + \
-    #     build_random_components(11,6)
-    single_stroke_roots = [Component('1',''), Component('2',''), Component('3',''), Component('4',''), \
-        Component('5',''), Component('6',''), Component('7',''), Component('8',''), Component('9',''), \
-        Component('0','')]
+def combinationToStr(components: List[Component]):
+    return ' '.join([ str(c) for c in components])
+
+def combinationsToStr(combinations: List[List[Component]]):
+    tmp = list(map(combinationToStr, combinations))
+    tmp.sort()
+    return tmp
+
+def performanceComparisonGraph(*fns: Callable[[Component,List[Component]],List[List[Component]]]):
+    # components = sum([
+    #     randomComponents(2,49),
+    #     randomComponents(3,76),
+    #     randomComponents(4,106),
+    #     randomComponents(5,79),
+    #     randomComponents(6,55),
+    #     randomComponents(7,43),
+    #     randomComponents(8,35),
+    #     randomComponents(9,18),
+    #     randomComponents(10,10),
+    #     randomComponents(11,6),
+    #     ],[])
+    singleStrokeRoots = [
+        Component('1',''), Component('2',''), Component('3',''), Component('4',''),
+        Component('5',''), Component('6',''), Component('7',''), Component('8',''),
+        Component('9',''), Component('0','')]
     x = []
-    time1 = []
-    time2 = []
-    time3 = []
-    time4 = []
-    for component_stroke_num in range(5,20):
-        x.append(component_stroke_num)
-        components = build_random_components(component_stroke_num,100)
-        roots = single_stroke_roots + build_random_components(2,50) + build_random_components(3,50) + \
-            build_random_components(4,50) + build_random_components(5,50)
-        t1 = test_find_combination_function_performance(components,roots,wrap_v1)
-        time1.append(t1)
-        clear_all_cache(components)
-        clear_all_cache(roots)
-        t2 = test_find_combination_function_performance(components,roots,wrap_v2)
-        time2.append(t2)
-        clear_all_cache(components)
-        clear_all_cache(roots)
-        t3 = test_find_combination_function_performance(components,roots,wrap_v1_1)
-        time3.append(t3)
-        clear_all_cache(components)
-        clear_all_cache(roots)
-        t4 = test_find_combination_function_performance(components,roots,wrap_v2_1)
-        time4.append(t4)
+    ys = []
+    for i in range(0,len(fns)):
+        ys.append([])
+    for componentStrokeNum in range(1,20):
+        print(componentStrokeNum)
+        x.append(componentStrokeNum)
+        components = randomComponents(componentStrokeNum,500)
+        roots = sum([singleStrokeRoots,
+            randomComponents(2,50),
+            randomComponents(3,50),
+            randomComponents(4,50),
+            randomComponents(5,50)
+            ],[])
+        for i in range(0,len(fns)):
+            y = testCombinationFn(components,roots,fns[i])
+            ys[i].append(y)
+            clearAllCache(components)
+            clearAllCache(roots)
     import matplotlib.pyplot as plt
+    colors = ['green', 'blue', 'yellow', 'pink']
     plt.title('comparison')
-    plt.plot(x,time1,color='green',label='v1')
-    plt.plot(x,time2,color='blue',label='v2')
-    plt.plot(x,time3,color='yellow',label='v3')
-    plt.plot(x,time4,color='pink',label='v4')
+    for i in range(0,len(ys)):
+        plt.plot(x,ys[i],color=colors[i],label=str(i))
     plt.legend()
     plt.xlabel('stroke num')
     plt.ylabel('time elapsed(ms)')
@@ -573,51 +566,91 @@ def performance_comparison_graph():
 
 #### run tests
 
+def wrapV1(component: Component,roots: List[Component]):
+    return findAllValidCombinations(component,roots,findSliceV1)
+
+def wrapV2(component: Component,roots: List[Component]):
+    return findAllValidCombinations(component,roots,findSliceV2)
+
+def wrapV1_1(component: Component,roots: List[Component]):
+    return findAllValidCombinations(component,roots,findSliceV1_1)
+
+def wrapV2_1(component: Component,roots: List[Component]):
+    return findAllValidCombinations(component,roots,findSliceV2_1)
+
+def wrapV3(component: Component,roots: List[Component]):
+    return findAllValidCombinations(component,roots,findSliceV3)
+
+def w1(component: Component,roots: List[Component]):
+    return findAllValidCombinations(component,roots,findSliceV1)
+
+def w2(component: Component,roots: List[Component]):
+    return findAllValidCombinationsV2(component,roots,findSliceV1)
+
+def w3(component: Component,roots: List[Component]):
+    return findAllValidCombinationsV3(component,roots,findSliceV1)
+
 # test1
-components = build_random_components(8,300) + build_random_components(9,300) + \
-    build_random_components(14,300) + build_random_components(15,300) + \
-    build_random_components(16,300) + build_random_components(17,300) + \
-    build_random_components(23,300) + build_random_components(24,300) + \
-    build_random_components(26,300) + build_random_components(28,300) + \
-    build_random_components(28,300) + build_random_components(30,300)
-single_stroke_roots = [Component('1',''), Component('2',''), Component('3',''), Component('4',''), \
-    Component('5',''), Component('6',''), Component('7',''), Component('8',''), Component('9',''), \
-    Component('0','')]
-roots = single_stroke_roots + build_random_components(2,50) + build_random_components(3,50) + \
-    build_random_components(4,60) + build_random_components(5,60)
-test_slice_function_performance(components,roots,find_slice_v1_2)
-clear_all_cache(components)
-clear_all_cache(roots)
-test_slice_function_performance(components,roots,find_slice_v2)
-clear_all_cache(components)
-clear_all_cache(roots)
-test_slice_function_performance(components,roots,find_slice_v1_1)
-clear_all_cache(components)
-clear_all_cache(roots)
-test_slice_function_performance(components,roots,find_slice_v2_1)
-clear_all_cache(components)
-clear_all_cache(roots)
-test_slice_function_performance(components,roots,find_slice_v1)
+# components = sum([
+#     randomComponents(8,100),
+#     randomComponents(9,100),
+#     randomComponents(14,100),
+#     randomComponents(15,100),
+#     randomComponents(16,100),
+#     randomComponents(17,100),
+#     randomComponents(23,100),
+#     randomComponents(24,100),
+#     randomComponents(26,100),
+#     randomComponents(28,100),
+#     randomComponents(28,100),
+#     randomComponents(30,100),
+# ],[])
+# components = randomComponents(30, 1000)
+# singleStrokeRoots = [Component('1',''), Component('2',''), Component('3',''),
+#     Component('4',''), Component('5',''), Component('6',''), Component('7',''),
+#     Component('8',''), Component('9',''), Component('0','')]
+# roots = sum([singleStrokeRoots,
+#     randomComponents(2,50),
+#     randomComponents(3,50),
+#     randomComponents(4,60),
+#     randomComponents(5,60),
+# ],[])
+# testSliceFn(components,roots,findSliceV1)
+# clearAllCache(components)
+# clearAllCache(roots)
+# testSliceFn(components,roots,findSliceV2)
+# clearAllCache(components)
+# clearAllCache(roots)
+# testSliceFn(components,roots,findSliceV1_1)
+# clearAllCache(components)
+# clearAllCache(roots)
+# testSliceFn(components,roots,findSliceV2_1)
+# clearAllCache(components)
+# clearAllCache(roots)
+# testSliceFn(components,roots,findSliceV3)
 
 # test2
-# check_correctness()
+# checkCorrectness(w1,w2,w3)
 
 # test3
-# performance_comparison_graph()
+performanceComparisonGraph(w1,w2)
 
 # test4
-# components = build_random_components(15,1000)
-# roots = build_random_components(3,100) + build_random_components(5,100) + build_random_components(4,100)
+# components = randomComponents(29,500)
+# singleStrokeRoots = [Component('1',''), Component('2',''), Component('3',''),
+#     Component('4',''), Component('5',''), Component('6',''), Component('7',''),
+#     Component('8',''), Component('9',''), Component('0','')]
+# roots = sum([singleStrokeRoots,
+#     randomComponents(2,50),
+#     randomComponents(3,50),
+#     randomComponents(4,60),
+#     randomComponents(5,60),
+# ],[])
 # def w1(component: Component,roots: List[Component]):
-#     return find_all_valid_combinations(component,roots,find_slice_v1)
+#     return findAllValidCombinations(component,roots,findSliceV1)
 # def w2(component: Component,roots: List[Component]):
-#     return find_all_valid_combinations_v2(component,roots,find_slice_v1)
-# def w3(component: Component,roots: List[Component]):
-#     return find_all_valid_combinations_v3(component,roots,find_slice_v1)
-# test_find_combination_function_performance(components,roots,w1)
-# clear_all_cache(components)
-# clear_all_cache(roots)
-# test_find_combination_function_performance(components,roots,w2)
-# clear_all_cache(components)
-# clear_all_cache(roots)
-# test_find_combination_function_performance(components,roots,w3)
+#     return findAllValidCombinationsV2(component,roots,findSliceV1)
+# testCombinationFn(components,roots,w2)
+# clearAllCache(components)
+# clearAllCache(roots)
+# testCombinationFn(components,roots,w1)

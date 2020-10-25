@@ -6,10 +6,10 @@ class Character:
     汉字
     '''
     def __init__(self, name: str, operator: str):
-        self.name = name
-        self.operator = operator
-        self.scheme: Tuple[Component, ...] = ()
-        self.code: str = ''
+        self.name                         = name
+        self.operator                     = operator
+        self.scheme: Tuple[Component,...] = ()
+        self.code                         = ''
 
 class Component(Character):
     '''
@@ -19,23 +19,7 @@ class Component(Character):
         super().__init__(name, None)
         self.strokeList = strokeList
         self.topologyMatrix: List[List[str]] = None
-        self.powerDict: Dict[int, Component] = {}
-        self.schemeList: List[Tuple[Component]] = {}
-
-    @staticmethod
-    def topoToString(topologyMatrix: List[List[str]]):
-        return ' '.join(' '.join(x) for x in topologyMatrix)
-
-
-    def getTopoSliceByIndex(self, lastIndex: int):
-        return [
-            [
-                relation for nrelation, relation in enumerate(row)
-                if nrelation <= lastIndex
-            ]
-            for nrow, row in enumerate(self.topologyMatrix)
-            if nrow <= lastIndex
-        ]
+        self.schemeList: List[Tuple[int, ...]] = []
 
     def getTopoSliceByIndexes(self, indexList: List[int]):
         return [
@@ -61,14 +45,14 @@ class Component(Character):
         component.topologyMatrix = fragmentTopologyMatrix
         return component
 
-class Singlet(Component):
-    def __init__(self, name):
+    @classmethod
+    def singlet(cls, name: str):
         stroke = Stroke({
             'feature': name,
             'start': [],
             'curveList': []
         })
-        super().__init__(name, [stroke])
+        return cls(name, [stroke])
 
 class Compound(Character):
     '''
