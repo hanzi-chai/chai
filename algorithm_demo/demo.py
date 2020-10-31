@@ -2,6 +2,7 @@ from collections import defaultdict
 import random
 import time
 from typing import DefaultDict, Dict, List, Callable, Tuple
+import numpy as np
 
 class Component():
     '''测试用的Component对象
@@ -222,21 +223,19 @@ def findSliceV3(component: Component, root: Component):
             try:
                 index = cStrokeList[start_:end+1].index(rStrokeList[rStrokeIndex]) + start_
                 start_ = index + 1
-                tmpCTopoStr = component.getTopoRow(index)
-                cTopoStrRow = ''
-                for i in iIndexList:
-                    cTopoStrRow += tmpCTopoStr[i]
-                rTopoStrRow = root.getTopoRow(rStrokeIndex)
-                if cTopoStrRow == rTopoStrRow:
-                    iIndexList.append(index)
-                    if rStrokeIndex < len(rStrokeList) - 1:
-                        for binary in gener(start_, end+1, rStrokeIndex+1, iIndexList.copy()):
-                            yield binary
-                    else:
-                        yield component.indexListToBinaryCode(iIndexList)
+                iIndexList.append(index)
+                if rStrokeIndex < len(rStrokeList) - 1:
+                    for iiIndexList in gener(start_, end+1, rStrokeIndex+1, iIndexList.copy()):
+                        yield iiIndexList
+                else:
+                    yield iIndexList
             except:
                 break
-    return gener(0, len(cStrokeList) - len(rStrokeList), 0, [])
+    result = []
+    for indexList in gener(0, len(cStrokeList) - len(rStrokeList), 0, []):
+        if component.getTopoSlice(indexList) == root.topoStr:
+            result.append(component.indexListToBinaryCode(indexList))
+    return result
 
 def findAllValidCombinations(
     component: Component,
@@ -306,23 +305,13 @@ def findAllValidCombinationsV2(
             else:
                 rear = mid
         return front
-    def first1(binary: int):
-        front = cLength - 1
-        rear = 0
-        while front > rear:
-            mid = (front + rear) // 2 + 1
-            if 2 ** mid > binary:
-                front = mid - 1
-            else:
-                rear = mid
-        return 2 ** front
     def combineNext(
         currentBinary: int,
         currentCombination: Tuple[int,...]):
-        empty = finishBinary - currentBinary
-        firstEmpty = first1(empty)
-        start = binarySearch(empty)
-        end = binarySearch(firstEmpty)
+        missingBinary = finishBinary - currentBinary
+        firstMissingBinary = 2 ** (len(bin(missingBinary)) - 3)
+        start = binarySearch(missingBinary)
+        end= binarySearch(firstMissingBinary)
         for index in range(start, end+1):
             binary = sliceBinaryList[index]
             if currentBinary & binary == 0:
@@ -342,34 +331,64 @@ def findAllValidCombinationsV3(
     component: Component,
     roots: List[Component],
     findSliceFn: Callable[[Component,Component],List[int]]):
-    sliceBinaryList = []
-    binaryDict = {}
+    sbd: DefaultDict[int, List[Tuple[int,Component]]] = defaultdict(list)
+    for root in roots:
+        for sliceBinary in findSliceFn(component, root):
+            sbd[len(bin(sliceBinary))].append((sliceBinary,root))
+    finishBinary = 2 ** len(component.strokeList) - 1
+    result: List[Tuple[Component,...]] = []
+    def combineNext(
+        currentBinary: int,
+        currentCombination: Tuple[int,...],
+        tryFrom: List[Tuple[int,Component]]):
+        for i in tryFrom:
+            if currentBinary & i[0] != 0:
+                continue
+            nextCombination = currentCombination + (i[1],)
+            nextBinary = currentBinary + i[0]
+            if nextBinary == finishBinary:
+                result.append(nextCombination)
+            else:
+                residue = finishBinary - nextBinary
+                combineNext(nextBinary, nextCombination, sbd[len(bin(residue))])
+    if sbd:
+        combineNext(0,(),sbd[len(bin(finishBinary))])
+    return result
+
+def findAllValidCombinationsV4(
+    component: Component,
+    roots: List[Component],
+    findSliceFn: Callable[[Component,Component],List[int]]):
+    binaryDict: Dict[int,Component] = {}
     for root in roots:
         sliceBinaryList = findSliceFn(component, root)
         for sliceBinary in sliceBinaryList:
             binaryDict[sliceBinary] = root
-        sliceBinaryList.extend(sliceBinaryList)
-    sbd = defaultdict(list)
-    for i in sliceBinaryList:
-        sbd[len(bin(i))].append(i)
-    finishBinary = 2 ** len(component.strokeList) - 1
-    tmpResult: List[Tuple[int,...]] = []
+    sliceBinaryList = list(binaryDict.keys())
+    listLength = len(sliceBinaryList)
+    tmpResult : List[Tuple[int,...]] = []
+    if listLength == 0:
+        return tmpResult
+    sliceBinaryList.sort()
+    finishBinary = 2 ** component.length - 1
     def combineNext(
         currentBinary: int,
-        currentCombination: Tuple[int,...],
-        tryFrom: list):
-        for binary in tryFrom:
-            if currentBinary & binary != 0:
-                continue
-            nextCombination = currentCombination + (binary,)
-            nextBinary = currentBinary + binary
-            if nextBinary == finishBinary:
-                tmpResult.append(nextCombination)
-            else:
-                residue = finishBinary - nextBinary
-                combineNext(nextBinary, nextCombination, sbd[len(residue)])
-    if sbd:
-        combineNext(0,(),sbd[len(bin(finishBinary))])
+        currentCombination: Tuple[int,...]):
+        missingBinary = finishBinary - currentBinary
+        firstMissingBinary = 2 ** (len(bin(missingBinary)) - 3)
+        start = np.searchsorted(sliceBinaryList, missingBinary, side='left')
+        end= np.searchsorted(sliceBinaryList, firstMissingBinary)
+        start = start if not start == listLength else start - 1
+        for index in range(start, end-1, -1):
+            binary = sliceBinaryList[index]
+            if currentBinary & binary == 0:
+                newBinary = currentBinary + binary
+                expandedCombination = currentCombination + (binary,)
+                if newBinary == finishBinary:
+                    tmpResult.append(expandedCombination)
+                else:
+                    combineNext(newBinary, expandedCombination)
+    combineNext(0,())
     result: List[Tuple[Component,...]] = []
     for t in tmpResult:
         result.append((binaryDict[i] for i in t))
@@ -494,12 +513,12 @@ def checkCorrectness(*fns: Callable[[Component,Component],List[List[Component]]]
     # 生成一个“天”字
     component = Component('横横撇点','散连交散连连')
     roots = [
-        Component('横',''),          #根“一”
-        Component('横横','散'),       #根“二”
-        Component('撇点','连'),       #根“人”
+        Component('横',''),            #根“一”
+        Component('横横','散'),        #根“二”
+        Component('撇点','连'),        #根“人”
         Component('横撇点','交连连'),  #根“大”
-        Component('撇',''),          #根“丿”
-        Component('点','')           #根“丶”
+        Component('撇',''),            #根“丿”
+        Component('点','')             #根“丶”
     ]
     for fn in fns:
         print('-----------')
@@ -518,68 +537,68 @@ def combinationsToStr(combinations: List[List[Component]]):
     tmp.sort()
     return tmp
 
-def performanceComparisonGraph(*fns: Callable[[Component,List[Component]],List[List[Component]]]):
-    # components = sum([
-    #     randomComponents(2,49),
-    #     randomComponents(3,76),
-    #     randomComponents(4,106),
-    #     randomComponents(5,79),
-    #     randomComponents(6,55),
-    #     randomComponents(7,43),
-    #     randomComponents(8,35),
-    #     randomComponents(9,18),
-    #     randomComponents(10,10),
-    #     randomComponents(11,6),
-    #     ],[])
-    singleStrokeRoots = [
-        Component('1',''), Component('2',''), Component('3',''), Component('4',''),
-        Component('5',''), Component('6',''), Component('7',''), Component('8',''),
-        Component('9',''), Component('0','')]
-    x = []
-    ys = []
-    for i in range(0,len(fns)):
-        ys.append([])
-    for componentStrokeNum in range(1,20):
-        print(componentStrokeNum)
-        x.append(componentStrokeNum)
-        components = randomComponents(componentStrokeNum,500)
-        roots = sum([singleStrokeRoots,
-            randomComponents(2,50),
-            randomComponents(3,50),
-            randomComponents(4,50),
-            randomComponents(5,50)
-            ],[])
-        for i in range(0,len(fns)):
-            y = testCombinationFn(components,roots,fns[i])
-            ys[i].append(y)
-            clearAllCache(components)
-            clearAllCache(roots)
-    import matplotlib.pyplot as plt
-    colors = ['green', 'blue', 'yellow', 'pink']
-    plt.title('comparison')
-    for i in range(0,len(ys)):
-        plt.plot(x,ys[i],color=colors[i],label=str(i))
-    plt.legend()
-    plt.xlabel('stroke num')
-    plt.ylabel('time elapsed(ms)')
-    plt.show()
+# def performanceComparisonGraph(*fns: Callable[[Component,List[Component]],List[List[Component]]]):
+#     # components = sum([
+#     #     randomComponents(2,49),
+#     #     randomComponents(3,76),
+#     #     randomComponents(4,106),
+#     #     randomComponents(5,79),
+#     #     randomComponents(6,55),
+#     #     randomComponents(7,43),
+#     #     randomComponents(8,35),
+#     #     randomComponents(9,18),
+#     #     randomComponents(10,10),
+#     #     randomComponents(11,6),
+#     #     ],[])
+#     singleStrokeRoots = [
+#         Component('1',''), Component('2',''), Component('3',''), Component('4',''),
+#         Component('5',''), Component('6',''), Component('7',''), Component('8',''),
+#         Component('9',''), Component('0','')]
+#     x = []
+#     ys = []
+#     for i in range(0,len(fns)):
+#         ys.append([])
+#     for componentStrokeNum in range(30,32):
+#         print(componentStrokeNum)
+#         x.append(componentStrokeNum)
+#         components = randomComponents(componentStrokeNum,1000)
+#         roots = sum([singleStrokeRoots,
+#             randomComponents(2,50),
+#             randomComponents(3,50),
+#             randomComponents(4,50),
+#             randomComponents(5,50)
+#             ],[])
+#         for i in range(0,len(fns)):
+#             y = testCombinationFn(components,roots,fns[i])
+#             ys[i].append(y)
+#             clearAllCache(components)
+#             clearAllCache(roots)
+#     import matplotlib.pyplot as plt
+#     colors = ['green', 'blue', 'yellow', 'pink', 'red']
+#     plt.title('comparison')
+#     for i in range(0,len(ys)):
+#         plt.plot(x,ys[i],color=colors[i],label=str(i))
+#     plt.legend()
+#     plt.xlabel('stroke num')
+#     plt.ylabel('time elapsed(ms)')
+#     plt.show()
 
 #### run tests
 
 def wrapV1(component: Component,roots: List[Component]):
-    return findAllValidCombinations(component,roots,findSliceV1)
+    return findAllValidCombinationsV2(component,roots,findSliceV1)
 
 def wrapV2(component: Component,roots: List[Component]):
-    return findAllValidCombinations(component,roots,findSliceV2)
+    return findAllValidCombinationsV2(component,roots,findSliceV2)
 
 def wrapV1_1(component: Component,roots: List[Component]):
-    return findAllValidCombinations(component,roots,findSliceV1_1)
+    return findAllValidCombinationsV2(component,roots,findSliceV1_1)
 
 def wrapV2_1(component: Component,roots: List[Component]):
-    return findAllValidCombinations(component,roots,findSliceV2_1)
+    return findAllValidCombinationsV2(component,roots,findSliceV2_1)
 
 def wrapV3(component: Component,roots: List[Component]):
-    return findAllValidCombinations(component,roots,findSliceV3)
+    return findAllValidCombinationsV2(component,roots,findSliceV3)
 
 def w1(component: Component,roots: List[Component]):
     return findAllValidCombinations(component,roots,findSliceV1)
@@ -590,7 +609,11 @@ def w2(component: Component,roots: List[Component]):
 def w3(component: Component,roots: List[Component]):
     return findAllValidCombinationsV3(component,roots,findSliceV1)
 
+def w4(component: Component,roots: List[Component]):
+    return findAllValidCombinationsV4(component,roots,findSliceV1)
+
 # test1
+
 # components = sum([
 #     randomComponents(8,100),
 #     randomComponents(9,100),
@@ -630,27 +653,23 @@ def w3(component: Component,roots: List[Component]):
 # testSliceFn(components,roots,findSliceV3)
 
 # test2
-# checkCorrectness(w1,w2,w3)
+# checkCorrectness(w4)
 
 # test3
-performanceComparisonGraph(w1,w2)
+# performanceComparisonGraph(w2,w3)
 
 # test4
-# components = randomComponents(29,500)
-# singleStrokeRoots = [Component('1',''), Component('2',''), Component('3',''),
-#     Component('4',''), Component('5',''), Component('6',''), Component('7',''),
-#     Component('8',''), Component('9',''), Component('0','')]
-# roots = sum([singleStrokeRoots,
-#     randomComponents(2,50),
-#     randomComponents(3,50),
-#     randomComponents(4,60),
-#     randomComponents(5,60),
-# ],[])
-# def w1(component: Component,roots: List[Component]):
-#     return findAllValidCombinations(component,roots,findSliceV1)
-# def w2(component: Component,roots: List[Component]):
-#     return findAllValidCombinationsV2(component,roots,findSliceV1)
-# testCombinationFn(components,roots,w2)
-# clearAllCache(components)
-# clearAllCache(roots)
-# testCombinationFn(components,roots,w1)
+components = randomComponents(8,500)
+singleStrokeRoots = [Component('1',''), Component('2',''), Component('3',''),
+    Component('4',''), Component('5',''), Component('6',''), Component('7',''),
+    Component('8',''), Component('9',''), Component('0','')]
+roots = sum([singleStrokeRoots,
+    randomComponents(2,50),
+    randomComponents(3,50),
+    randomComponents(4,60),
+    randomComponents(5,60),
+],[])
+testCombinationFn(components,roots,w2)
+clearAllCache(components)
+clearAllCache(roots)
+testCombinationFn(components,roots,w4)
