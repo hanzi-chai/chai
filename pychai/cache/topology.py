@@ -3,6 +3,7 @@
 '''
 
 import os
+from pathlib import Path
 from numpy import array, cross, inf, stack
 from numpy.linalg import norm, inv
 from ..util import loadComponents
@@ -92,14 +93,14 @@ class Topology:
             returnList.append(row)
         return returnList
 
-if __name__ == '__main__':
+path = os.path.join(os.path.dirname(__file__), 'topology.yaml')
+file = Path(path)
+if not file.exists():
     COMPONENTS = loadComponents()
     topology = Topology()
     TOPOLOGIES = {}
     for componentName, component in COMPONENTS.items():
         TOPOLOGIES[componentName] = topology(component)
-    path = os.path.join(os.path.dirname(__file__), 'topology.yaml')
-
     with open(path, 'w', encoding='utf-8') as file:
         for componentName, topologyList in TOPOLOGIES.items():
             file.write(f'{componentName}: {topologyList}\n')

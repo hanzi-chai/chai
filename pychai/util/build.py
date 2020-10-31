@@ -4,6 +4,7 @@
 from typing import Tuple, Dict
 from ..base import Component, Compound, Selector
 from ..preset import *
+from ..cache.topology import *
 
 def buildClassifier(config) -> Dict[str,int]:
     strokeClassifier: Dict[str, int] = {}
