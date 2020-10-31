@@ -78,11 +78,11 @@ class Sequential(Chai):
             component: 待组合的部件
 
         输出:
-            List[Tuple[int,...]]: 组合列表，根用切片二进制数表示
+            Tuple[int,...]: 最优组合，根用切片二进制数表示
         '''
-        binaryDict: Dict[int, Component] = {}
+        binaryDict: Dict[int,Component] = {}
         for root in self.componentRoot.values():
-            sliceBinaryList = Sequential.genSliceBinaries(component, root.character)
+            sliceBinaryList = Sequential.genSliceBinaries(component, root)
             for sliceBinary in sliceBinaryList:
                 binaryDict[sliceBinary] = root
         sliceBinaryList = list(binaryDict.keys())
@@ -91,12 +91,24 @@ class Sequential(Chai):
         if listLength == 0:
             return schemeList
         sliceBinaryList.sort(reverse=True)
-        finishBinary = 2 ** len(component.strokeList) - 1
-        def combineNext(
-            currentBinary: int,
-            currentCombination: Tuple[int,...],
-            startFromIndex: int):
-            for index in range(startFromIndex, listLength):
+        cLength = len(component.strokeList)
+        finishBinary = 2 ** cLength - 1
+        def binarySearch(target: int):
+            front = 0
+            rear = listLength - 1
+            while front < rear:
+                mid = (front + rear) // 2
+                if sliceBinaryList[mid] > target:
+                    front = mid + 1
+                else:
+                    rear = mid
+            return front
+        def combineNext(currentBinary: int, currentCombination: Tuple[int,...]):
+            missingBinary = finishBinary - currentBinary
+            firstMissingBinary = 2 ** (len(bin(missingBinary)) - 3)
+            start = binarySearch(missingBinary)
+            end = binarySearch(firstMissingBinary)
+            for index in range(start, end+1):
                 binary = sliceBinaryList[index]
                 if currentBinary & binary == 0:
                     newBinary = currentBinary + binary
@@ -104,8 +116,8 @@ class Sequential(Chai):
                     if newBinary == finishBinary:
                         schemeList.append(expandedCombination)
                     else:
-                        combineNext(newBinary, expandedCombination, index + 1)
-        combineNext(0, (), 0)
+                        combineNext(newBinary, expandedCombination)
+        combineNext(0,())
         component.schemeList = schemeList
         schemeBinary = self.selector(component)
         return tuple(map(lambda x: binaryDict[x], schemeBinary))
