@@ -370,16 +370,16 @@ def findAllValidCombinationsV4(
     if listLength == 0:
         return tmpResult
     sliceBinaryList.sort()
+    sbl = np.array(sliceBinaryList)
     finishBinary = 2 ** component.length - 1
     def combineNext(
         currentBinary: int,
         currentCombination: Tuple[int,...]):
         missingBinary = finishBinary - currentBinary
         firstMissingBinary = 2 ** (len(bin(missingBinary)) - 3)
-        start = np.searchsorted(sliceBinaryList, missingBinary, side='left')
-        end= np.searchsorted(sliceBinaryList, firstMissingBinary)
-        start = start if not start == listLength else start - 1
-        for index in range(start, end-1, -1):
+        start= sbl.searchsorted(firstMissingBinary)
+        end = sbl.searchsorted(missingBinary, side='right')
+        for index in range(start, end):
             binary = sliceBinaryList[index]
             if currentBinary & binary == 0:
                 newBinary = currentBinary + binary
@@ -659,7 +659,7 @@ def w4(component: Component,roots: List[Component]):
 # performanceComparisonGraph(w2,w3)
 
 # test4
-components = randomComponents(8,500)
+components = randomComponents(30,500)
 singleStrokeRoots = [Component('1',''), Component('2',''), Component('3',''),
     Component('4',''), Component('5',''), Component('6',''), Component('7',''),
     Component('8',''), Component('9',''), Component('0','')]
