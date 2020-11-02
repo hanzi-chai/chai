@@ -15,10 +15,10 @@ class Component(Character):
     '''
     部件
     '''
-    def __init__(self, name: str, strokeList: List[Stroke]):
+    def __init__(self, name: str, strokeList: List[Stroke], topologyMatrix: List[List[str]]):
         super().__init__(name, None)
         self.strokeList = strokeList
-        self.topologyMatrix: List[List[str]] = None
+        self.topologyMatrix = topologyMatrix
         self.schemeList: List[Tuple[int, ...]] = []
 
     def getTopoSliceByIndexes(self, indexList: List[int]):
@@ -41,8 +41,7 @@ class Component(Character):
     def fragment(self, name: str, indexList: List[int]):
         strokeList = [self.strokeList[index] for index in indexList]
         fragmentTopologyMatrix = self.getTopoSliceByIndexes(indexList)
-        component =  Component(name, strokeList)
-        component.topologyMatrix = fragmentTopologyMatrix
+        component =  Component(name, strokeList, fragmentTopologyMatrix)
         return component
 
     @classmethod
@@ -52,7 +51,7 @@ class Component(Character):
             'start': [],
             'curveList': []
         })
-        return cls(name, [stroke])
+        return cls(name, [stroke], [])
 
 class Compound(Character):
     '''
