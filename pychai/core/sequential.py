@@ -5,6 +5,7 @@
 from typing import Dict, List, Tuple
 from .chai import Chai
 from ..base import Component, Compound
+from ..log import chaiLogger
 
 class Sequential(Chai):
     '''
@@ -90,6 +91,8 @@ class Sequential(Chai):
         schemeList : List[Tuple[int,...]] = []
         if listLength == 0:
             return schemeList
+        chaiLogger.debug(f'{component.name}')
+        chaiLogger.debug(binaryDict)
         sliceBinaryList.sort(reverse=True)
         cLength = len(component.strokeList)
         finishBinary = 2 ** cLength - 1

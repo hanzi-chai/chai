@@ -4,4 +4,4 @@
 
 from .object import *
 from .character import *
-from .selector import *
+from .selector import Selector

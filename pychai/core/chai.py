@@ -5,8 +5,9 @@ Chai 基类
 import abc
 from typing import Tuple
 from ..base import Character, Component, Compound, Selector
-from ..util import loadGB, loadComponentsWithTopology, loadCompounds, loadConfig
-from ..util import buildSelector, buildClassifier, buildRootMap, buildRoots, buildRoots
+from ..util.load import loadGB, loadComponentsWithTopology, loadCompounds, loadConfig
+from ..util.build import buildSelector, buildClassifier, buildRootMap, buildRoots, buildRoots
+from ..log import chaiLogger
 import time
 
 class Chai:
@@ -14,7 +15,8 @@ class Chai:
     抽象基类
     '''
 
-    def __init__(self, configPath):
+    def __init__(self, configPath, debug=False):
+        if debug: chaiLogger.setLevel(10)
         self.GB                 = loadGB()
         self.COMPONENTS         = loadComponentsWithTopology()
         self.COMPOUNDS          = loadCompounds(self.COMPONENTS)
