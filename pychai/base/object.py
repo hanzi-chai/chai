@@ -3,8 +3,10 @@
 '''
 
 from abc import abstractmethod
+from functools import cached_property
 from typing import List, Dict
 from numpy import array
+from numpy.linalg import norm
 
 class Curve:
     '''
@@ -24,6 +26,9 @@ class Linear(Curve):
 
     def linearize(self):
         return self
+
+    def linearizeLength(self):
+        return norm(self.P1 - self.P0)
 
     def derivative(self):
         def f(t):
@@ -54,6 +59,9 @@ class Cubic(Curve):
 
     def linearize(self):
         return Linear(self.P0, self.P3)
+
+    def linearizeLength(self):
+        return self.linearize().linearizeLength()
 
 class Stroke:
     '''
@@ -93,6 +101,10 @@ class Stroke:
             curve = Cubic(P0, P1, P2, P3)
             self.start = P3
             return curve
+
+    @cached_property
+    def linearizeLength(self):
+        return sum(c.linearizeLength() for c in self.curveList)
 
     def __str__(self):
         return f'{self.feature}: {self.start} -> {self.curveList}'
