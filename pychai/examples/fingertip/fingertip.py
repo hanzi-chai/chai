@@ -36,5 +36,5 @@ class FingerTip(Sequential):
             scheme = (scheme + (scheme[-1:] * 3))[:4]
         return ''.join([self.rootMap[root.name] for root in scheme])
 
-fingertip = FingerTip('templates/fingertip/fingertip.config.yaml')
-fingertip.chai('templates/fingertip/fingertip.result.yaml')
+fingertip = FingerTip('examples/fingertip/fingertip.config.yaml')
+fingertip.chai('examples/fingertip/fingertip.result.yaml')
