@@ -2,6 +2,8 @@
 预置择优函数组件
 '''
 
+from pychai.base.object import Stroke
+from typing import List, Tuple
 from ..base import Component
 
 def bias(_: Component, scheme):
@@ -53,3 +55,32 @@ def topology(component: Component, scheme):
                     if '连' in relation: hasConnection = True
                     if '交' in relation: hasCross = True
     return 2 if hasCross else 1 if hasConnection else 0
+
+def similarity(component: Component, scheme):
+    '''
+    功能：估值器，按拆分中各切片比例相似性估值
+    '''
+    cpnStrokeList = component.strokeList
+    length = len(cpnStrokeList)
+    result: Tuple[int,...] = ()
+    def binaryToIndexList(binary: int):
+        indexList: List[int] = []
+        for i in range(length):
+            if 2 ** (length - 1 - i) & binary:
+                indexList.append(i)
+        return indexList
+    for binary in scheme:
+        originalStrokeList = component.binaryDict[binary].strokeList
+        sliceStrokeList: List[Stroke] = []
+        indexList = binaryToIndexList(binary)
+        if len(indexList) > 1:
+            for index in indexList:
+                sliceStrokeList.append(cpnStrokeList[index])
+            oFirstStrokeLength = originalStrokeList[0].linearizeLength
+            sFirstStrokeLength = sliceStrokeList[0].linearizeLength
+            oRatio = list(map(lambda x: x.linearizeLength / oFirstStrokeLength, originalStrokeList))
+            sRatio = list(map(lambda x: x.linearizeLength / sFirstStrokeLength, sliceStrokeList))
+            result += (sum(abs(oRatio[i] - sRatio[i]) for i in range(len(oRatio))),)
+        else:
+            result += (0,)
+    return result
