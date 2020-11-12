@@ -17,9 +17,10 @@ class Component(Character):
     '''
     def __init__(self, name: str, strokeList: List[Stroke], topologyMatrix: List[List[str]]):
         super().__init__(name, None)
-        self.strokeList = strokeList
-        self.topologyMatrix = topologyMatrix
+        self.strokeList                        = strokeList
+        self.topologyMatrix                    = topologyMatrix
         self.schemeList: List[Tuple[int, ...]] = []
+        self.binaryDict: Dict[int, Component]  = {}
 
     def getTopoSliceByIndexes(self, indexList: List[int]):
         return [
@@ -47,9 +48,9 @@ class Component(Character):
     @classmethod
     def singlet(cls, name: str):
         stroke = Stroke({
-            'feature': name,
-            'start': [],
-            'curveList': []
+            'feature'   : name,
+            'start'     : [],
+            'curveList' : []
         })
         return cls(name, [stroke], [])
 
@@ -59,6 +60,6 @@ class Compound(Character):
     '''
     def __init__(self, name: str, operator: str, firstChild: Character, secondChild: Character, mix: int):
         super().__init__(name, operator)
-        self.firstChild = firstChild
+        self.firstChild  = firstChild
         self.secondChild = secondChild
-        self.mix = mix
+        self.mix         = mix

@@ -1,7 +1,7 @@
 '''
 '''
 
-from typing import Tuple, Dict
+from typing import Dict
 from ..base import Component, Compound, Selector
 from ..preset import *
 
@@ -36,12 +36,10 @@ def buildRootMap(config) -> Dict[str, str]:
                 rootMap[rootName] = key
     return rootMap
 
-def buildRoots(CONFIG,
-        COMPONENTS: Dict[str, Component],
-        COMPOUNDS: Dict[str, Compound]) -> Tuple[Dict[str, Component], ...]:
+def buildRoots(CONFIG, COMPONENTS: Dict[str, Component], COMPOUNDS: Dict[str, Compound]):
     #退化字根到字根的映射，用于构建 powerDict
-    componentRoot = {}
-    compoundRoot = {}
+    componentRoot: Dict[str, Component] = {}
+    compoundRoot: Dict[str, None] = {}
     for rootNameList in CONFIG['mapper'].values():
         for rootName in rootNameList:
             # 字根是「文」数据中的一个部件
