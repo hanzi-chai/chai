@@ -36,6 +36,8 @@ class Sequential(Chai):
         result: List[int] = []
         if cpnLength < rootLength:
             return result
+        if component.name == '囱框' and root.name == '口':
+            return result
         # 动态规划思想，找根的第 n 笔的切片列表取决于根第 n-1 笔的切片列表。由此反推，先找根第
         # 1笔的切片列表，然后反复依照前一笔的切片列表找下一笔的切片列表，直到根所有笔画查找完毕。
         # 若在查找根的某一笔时切片列表为空，则提前终止，返回空列表。
@@ -68,6 +70,12 @@ class Sequential(Chai):
                 return result
             # 每完成根的一个笔画的查找，更新切片列表，用于下一笔的查找
             validIndexLists = nextLevelValidIndexLists
+        if root.name == '囗':
+            last = len(validIndexLists) - 1
+            for i in range(last, -1, -1):
+                indexList = validIndexLists[i]
+                if indexList[2] - indexList[1] == 1:
+                    validIndexLists.remove(indexList)
         for indexList in validIndexLists:
             result.append(component.indexListToBinary(indexList))
         return result
@@ -81,18 +89,17 @@ class Sequential(Chai):
         输出:
             Tuple[int,...]: 最优组合，根用切片二进制数表示
         '''
-        binaryDict: Dict[int,Component] = {}
         for root in self.componentRoot.values():
             sliceBinaryList = Sequential.genSliceBinaries(component, root)
             for sliceBinary in sliceBinaryList:
-                binaryDict[sliceBinary] = root
-        sliceBinaryList = list(binaryDict.keys())
+                component.binaryDict[sliceBinary] = root
+        sliceBinaryList = list(component.binaryDict.keys())
         listLength = len(sliceBinaryList)
         schemeList : List[Tuple[int,...]] = []
         if listLength == 0:
             return schemeList
         chaiLogger.debug(f'{component.name}')
-        chaiLogger.debug(binaryDict)
+        chaiLogger.debug(component.binaryDict)
         sliceBinaryList.sort(reverse=True)
         cLength = len(component.strokeList)
         finishBinary = 2 ** cLength - 1
@@ -123,7 +130,7 @@ class Sequential(Chai):
         combineNext(0,())
         component.schemeList = schemeList
         schemeBinary = self.selector(component)
-        return tuple(map(lambda x: binaryDict[x], schemeBinary))
+        return tuple(map(lambda x: component.binaryDict[x], schemeBinary))
 
     def _getComponentScheme(self, component: Component) -> Tuple[Component, ...]:
         if component.name in self.componentRoot:
