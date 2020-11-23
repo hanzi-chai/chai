@@ -2,10 +2,11 @@
 经典形码
 '''
 
-from typing import Dict, List, Tuple
+from typing import List, Tuple
 from .chai import Chai
 from ..base import Component, Compound
 from ..log import chaiLogger
+from ..util import strokeFeatureEqual
 
 class Sequential(Chai):
     '''
@@ -36,8 +37,11 @@ class Sequential(Chai):
         result: List[int] = []
         if cpnLength < rootLength:
             return result
-        if component.name == '囱框' and root.name == '口':
-            return result
+        if root.name == '囗':
+            if component.name == '囱框':
+                return [7]
+            else:
+                return result
         # 动态规划思想，找根的第 n 笔的切片列表取决于根第 n-1 笔的切片列表。由此反推，先找根第
         # 1笔的切片列表，然后反复依照前一笔的切片列表找下一笔的切片列表，直到根所有笔画查找完毕。
         # 若在查找根的某一笔时切片列表为空，则提前终止，返回空列表。
@@ -45,7 +49,7 @@ class Sequential(Chai):
         rootFirstStroke = rStrokeList[0]
         lengthLimit = cpnLength - rootLength + 1 # 根的笔画序列长度限制查找范围
         for cpnStrokeIndex in range(0, lengthLimit):
-            if cpnStrokeList[cpnStrokeIndex].feature == rootFirstStroke.feature:
+            if strokeFeatureEqual(cpnStrokeList[cpnStrokeIndex].feature, rootFirstStroke.feature):
                 validIndexLists.append([cpnStrokeIndex])
         if len(validIndexLists) == 0: # 根第1笔就已经没有找到切片的话直接返回空列表
             return result
@@ -53,10 +57,11 @@ class Sequential(Chai):
         for rStrokeIndex in range(1, rootLength):
             nextLevelValidIndexLists: List[List[int]] = []
             limit = lengthLimit + rStrokeIndex # 根据查找的是根剩余的长度调整查找范围
+            rStrokeFeature = rStrokeList[rStrokeIndex].feature
             rootTopoRowStr = ' '.join(root.topologyMatrix[rStrokeIndex])
             for indexList in validIndexLists:
                 for cpnStrokeIndex in range(indexList[-1]+1, limit):
-                    if cpnStrokeList[cpnStrokeIndex].feature == rStrokeList[rStrokeIndex].feature:
+                    if strokeFeatureEqual(cpnStrokeList[cpnStrokeIndex].feature, rStrokeFeature):
                         expandedIndexList = indexList + [cpnStrokeIndex]
                         # 检查拓扑是否符合
                         cTopoRow = component.topologyMatrix[cpnStrokeIndex]
@@ -70,12 +75,6 @@ class Sequential(Chai):
                 return result
             # 每完成根的一个笔画的查找，更新切片列表，用于下一笔的查找
             validIndexLists = nextLevelValidIndexLists
-        if root.name == '囗':
-            last = len(validIndexLists) - 1
-            for i in range(last, -1, -1):
-                indexList = validIndexLists[i]
-                if indexList[2] - indexList[1] == 1:
-                    validIndexLists.remove(indexList)
         for indexList in validIndexLists:
             result.append(component.indexListToBinary(indexList))
         return result
