@@ -1,4 +1,4 @@
-from typing import List, Dict, Tuple
+from typing import List, Dict, Optional, Tuple
 from .object import Stroke
 
 class Character:
@@ -22,16 +22,6 @@ class Component(Character):
         self.schemeList: List[Tuple[int, ...]] = []
         self.binaryDict: Dict[int, Component]  = {}
 
-    def getTopoSliceByIndexes(self, indexList: List[int]):
-        return [
-            [
-                relation for nrelation, relation in enumerate(row)
-                if nrelation in indexList
-            ]
-            for nrow, row in enumerate(self.topologyMatrix)
-            if nrow in indexList
-        ]
-
     def indexListToBinary(self, indexList: List[int]):
         length = len(self.strokeList)
         binaryCode: int = 0
@@ -41,7 +31,14 @@ class Component(Character):
 
     def fragment(self, name: str, indexList: List[int]):
         strokeList = [self.strokeList[index] for index in indexList]
-        fragmentTopologyMatrix = self.getTopoSliceByIndexes(indexList)
+        fragmentTopologyMatrix = [
+            [
+                relation for nrelation, relation in enumerate(row)
+                if nrelation in indexList
+            ]
+            for nrow, row in enumerate(self.topologyMatrix)
+            if nrow in indexList
+        ]
         component =  Component(name, strokeList, fragmentTopologyMatrix)
         return component
 
