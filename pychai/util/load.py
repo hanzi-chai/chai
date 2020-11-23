@@ -4,7 +4,7 @@ from pkgutil import get_data
 from typing import List, Dict
 import yaml
 from yaml import BaseLoader, SafeLoader
-from .topology import Topology
+from .topology import topology
 from ..base import Stroke, Component, Compound
 
 def loadInternal(path, withNumbers=True):
@@ -49,7 +49,6 @@ def loadComponentsWithTopology() -> Dict[str, Component]:
     file = Path(path)
     COMPONENTS = loadComponents()
     if not file.exists():
-        topology = Topology()
         TOPOLOGIES = {}
         for componentName, component in COMPONENTS.items():
             topologyMatrix = topology(component)
