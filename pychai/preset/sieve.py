@@ -39,11 +39,15 @@ def topology(component: Component, scheme):
     '''
     功能：估值器，按拆分中各切片的关系估值
     '''
-    hasConnection = False
-    hasCross = False
-    l = len(component.strokeList)
+    connectionCount = 0
+    crossCount = 0
+    length = len(component.strokeList)
     topologyMatrix = component.topologyMatrix
-    schemeParsed = [tuple(k for k in range(l) if (1 << (l - k - 1)) & num) for num in scheme]
+    schemeParsed = [
+        tuple(k for k in range(length)
+        if (1 << (length - k - 1)) & binary)
+        for binary in scheme
+        ]
     for n, strokeList in enumerate(schemeParsed):
         for n_, strokeList_ in enumerate(schemeParsed):
             if n_ <= n: continue
@@ -52,9 +56,9 @@ def topology(component: Component, scheme):
                     smaller = min(stroke, stroke_)
                     larger = max(stroke, stroke_)
                     relation = [x[-1:] for x in topologyMatrix[larger][smaller].split('_')]
-                    if '连' in relation: hasConnection = True
-                    if '交' in relation: hasCross = True
-    return 2 if hasCross else 1 if hasConnection else 0
+                    if '连' in relation: connectionCount += 1
+                    if '交' in relation: crossCount += 1
+    return (connectionCount, crossCount)
 
 def similarity(component: Component, scheme):
     '''
