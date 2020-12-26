@@ -39,30 +39,34 @@ def topology(component: Component, scheme):
     '''
     功能：估值器，按拆分中各切片的关系估值
     '''
-    connectionCount = 0
-    crossCount = 0
+    connectionBetweenRootsCount = 0
+    crossBewteenRootsCount = 0
     length = len(component.strokeList)
     topologyMatrix = component.topologyMatrix
-    schemeParsed = [
-        tuple(k for k in range(length)
-        if (1 << (length - k - 1)) & binary)
-        for binary in scheme
-        ]
-    for n, strokeList in enumerate(schemeParsed):
-        for n_, strokeList_ in enumerate(schemeParsed):
+    schemeParsed = [tuple(strokeIndex
+        for strokeIndex in range(length)
+            if (1 << (length - strokeIndex - 1)) & binary)
+        for binary in scheme]
+    enum = enumerate(schemeParsed)
+    for n, strokeIndexList in enum:
+        for n_, strokeIndexList_ in enum:
             if n_ <= n: continue
-            for stroke in strokeList:
-                for stroke_ in strokeList_:
+            isConnected = False
+            isCrossed = False
+            for stroke in strokeIndexList:
+                for stroke_ in strokeIndexList_:
                     smaller = min(stroke, stroke_)
                     larger = max(stroke, stroke_)
                     relation = [x[-1:] for x in topologyMatrix[larger][smaller].split('_')]
-                    if '连' in relation: connectionCount += 1
-                    if '交' in relation: crossCount += 1
-    return (connectionCount, crossCount)
+                    if '连' in relation: isCrossed = True
+                    if '交' in relation: isConnected = True
+            if isConnected: connectionBetweenRootsCount += 1
+            if isCrossed: crossBewteenRootsCount += 1
+    return (connectionBetweenRootsCount, crossBewteenRootsCount)
 
 def similarity(component: Component, scheme):
     '''
-    功能：估值器，按拆分中各切片比例相似性估值
+    功能：估值器，按拆分中各切片比例相似性估值（弃用）
     '''
     cpnStrokeList = component.strokeList
     length = len(cpnStrokeList)
