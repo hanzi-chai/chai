@@ -144,7 +144,7 @@ def topology(component: Component) -> List[List[str]]:
             lengthRelation = ''
             if hengOrShu and feature == feature_:
                 lengthRelation = '&短' if curveList[0].linearizeLength() < curveList_[0].linearizeLength() else '&长'
-            row.append(feature_, feature, '_'.join(relationList) + lengthRelation)
+            row.append('_'.join(relationList) + lengthRelation)
         returnList.append(row)
     return returnList
 
