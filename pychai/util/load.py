@@ -1,13 +1,19 @@
+import os
+from pathlib import Path
 from pkgutil import get_data
 from typing import List, Dict
 import yaml
 from yaml import BaseLoader, SafeLoader
+from .topology import topology
 from ..base import Stroke, Component, Compound
 
 def loadInternal(path, withNumbers=True):
-    '''
-    功能：从模块包中加载 YAML 数据库
-    输入：路径 path
+    '''从模块包中加载 YAML 数据库
+
+    参数：
+        path: 路径
+        withNumbers: 是否含数字类型数据
+
     输出：yaml 解析器加载后的数据
     '''
     data = get_data(__package__, path).decode()
@@ -15,9 +21,12 @@ def loadInternal(path, withNumbers=True):
     return yaml.load(data, loader)
 
 def loadExternal(path, withNumbers=True):
-    '''
-    功能：从模块包中加载 YAML 数据库
-    输入：路径 path
+    '''从外部加载 YAML 数据库
+
+    参数：
+        path: 路径
+        withNumbers: 是否含数字类型数据
+
     输出：yaml 解析器加载后的数据
     '''
     loader = SafeLoader if withNumbers else BaseLoader
@@ -32,11 +41,23 @@ def loadComponents() -> Dict[str, Component]:
     COMPONENTS = {}
     for name, componentData in data.items():
         strokeList = [Stroke(strokeData) for strokeData in componentData]
-        COMPONENTS[name] = Component(name, strokeList)
+        COMPONENTS[name] = Component(name, strokeList, None)
     return COMPONENTS
 
 def loadComponentsWithTopology() -> Dict[str, Component]:
+    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'cache/topology.yaml')
+    file = Path(path)
     COMPONENTS = loadComponents()
+    if not file.exists():
+        TOPOLOGIES = {}
+        for componentName, component in COMPONENTS.items():
+            topologyMatrix = topology(component)
+            component.topologyMatrix = topologyMatrix
+            TOPOLOGIES[componentName] = topologyMatrix
+        with open(path, 'w', encoding='utf-8') as file:
+            for componentName, topologyList in TOPOLOGIES.items():
+                file.write(f'{componentName}: {topologyList}\n')
+        return COMPONENTS
     TOPOLOGIES = loadInternal('../cache/topology.yaml')
     for name, component in COMPONENTS.items():
         component.topologyMatrix = TOPOLOGIES[name]
@@ -66,10 +87,12 @@ def loadConfig(path) -> Dict:
     return config
 
 def expandAliaser(aliaserValueList) -> list:
-    '''
-    功能：展开形如 [1, ..., 6] 的省略式的笔画索引列
-    输入：笔画索引列 indexList
-    输入：展开后的笔画索引列 returnList ，形如 [1, 2, 3, 4, 5, 6]
+    '''展开形如 [1, ..., 6] 的省略式的笔画索引列
+    参数：
+        笔画索引列，形如 [1, ..., 5] 或 [1, 2, 3]
+
+    输出：
+        展开后的笔画索引列，形如 [1, 2, 3, 4, 5, 6]
     '''
     output = []
     for index, item in enumerate(aliaserValueList):
@@ -82,10 +105,13 @@ def expandAliaser(aliaserValueList) -> list:
     return output
 
 def checkCompleteness(classifier) -> None:
-    '''
-    功能：检查笔画定义完整性
-    输入：笔画定义字典 classifier 形如{type:[strokes]}
-    输出：若有缺失定义，发起错误，打印缺失笔画列 lostStrokes 形如 [strokes]
+    '''检查笔画定义完整性
+
+    参数：
+        classifier 笔画定义字典，形如{type:[strokes]}
+
+    输出：
+        若有缺失定义，发起错误，打印缺失笔画列 lostStrokes 形如 [strokes]
     '''
     allFeatureList = [
         '横', '提', '竖', '竖钩', '撇', '点', '捺',

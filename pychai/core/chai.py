@@ -4,9 +4,10 @@ Chai 基类
 
 import abc
 from typing import Tuple
-from ..base import Character, Component, Compound, Degenerator, Selector
-from ..util import loadGB, loadComponentsWithTopology, loadCompounds, loadConfig
-from ..util import buildDegenerator, buildSelector, buildClassifier, buildRootMap, buildDegeneracy
+from ..base import Character, Component, Compound, Selector
+from ..util.load import loadGB, loadComponentsWithTopology, loadCompounds, loadConfig
+from ..util.build import buildSelector, buildClassifier, buildRootMap, buildRoots, buildRoots
+from ..log import chaiLogger
 import time
 
 class Chai:
@@ -14,16 +15,16 @@ class Chai:
     抽象基类
     '''
 
-    def __init__(self, configPath):
-        self.GB = loadGB()
-        self.COMPONENTS = loadComponentsWithTopology()
-        self.COMPOUNDS = loadCompounds(self.COMPONENTS)
-        self.CONFIG = loadConfig(configPath)
-        self.degenerator: Degenerator = buildDegenerator(self.CONFIG)
+    def __init__(self, configPath, debug=False):
+        if debug: chaiLogger.setLevel(10)
+        self.GB                 = loadGB()
+        self.COMPONENTS         = loadComponentsWithTopology()
+        self.COMPOUNDS          = loadCompounds(self.COMPONENTS)
+        self.CONFIG             = loadConfig(configPath)
         self.selector: Selector = buildSelector(self.CONFIG)
-        self.classifier = buildClassifier(self.CONFIG)
-        self.rootMap = buildRootMap(self.CONFIG)
-        self.compoundRootList, self.degeneracy = buildDegeneracy(self.CONFIG, self.degenerator,
+        self.classifier         = buildClassifier(self.CONFIG)
+        self.rootMap            = buildRootMap(self.CONFIG)
+        self.componentRoot, self.compoundRoot = buildRoots(self.CONFIG,
             self.COMPONENTS, self.COMPOUNDS)
 
     @abc.abstractmethod

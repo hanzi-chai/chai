@@ -1,8 +1,8 @@
 '''
 '''
 
-from typing import Tuple, List, Dict
-from ..base import Fragment, Singlet, Degenerator, Selector
+from typing import Dict
+from ..base import Component, Compound, Selector
 from ..preset import *
 
 def buildClassifier(config) -> Dict[str,int]:
@@ -11,16 +11,6 @@ def buildClassifier(config) -> Dict[str,int]:
         for strokeName in strokeNames:
             strokeClassifier[strokeName] = int(strokeTypeNum)
     return strokeClassifier
-
-def buildDegenerator(config) -> Degenerator:
-    fieldDict = {
-        '笔画序列': featureList,
-        '笔画序列（简）': primitiveFeatureList,
-        '笔画拓扑': topologyList
-    }
-    if any(fieldName not in fieldDict for fieldName in config['degenerator']):
-        raise ValueError('未定义的退化函数')
-    return Degenerator([fieldDict[fieldName] for fieldName in config['degenerator']])
 
 def buildSelector(config) -> Selector:
     sieveDict = {
@@ -46,38 +36,30 @@ def buildRootMap(config) -> Dict[str, str]:
                 rootMap[rootName] = key
     return rootMap
 
-def buildDegeneracy(CONFIG, degenerator, COMPONENTS, COMPOUNDS) -> Tuple[List[str], Dict[str, Component]]:
-    '''
-    功能：解析出退化的用户字根，建立退化字根到字根的字典、字根到键位的字典
-    输出：用户字根索引字典 degeneracy 、键位索引字典 rootKeymap
-    '''
-    # 退化字根到字根的映射，用于构建 powerDict
-    degeneracy: Dict[str, Component] = {}
-    compoundRootList = []
-    allRootList = sum([list(x) for x in CONFIG['mapper'].values()], [])
-    for rootName in allRootList:
-        # 字根是「文」数据中的一个部件
-        if rootName in COMPONENTS:
-            root = COMPONENTS[rootName]
-            image = degenerator(root)
-            degeneracy[image] = root
-        # 字根不是「文」数据库中的部件，但用户定义了它
-        elif rootName in CONFIG['aliaser']:
-            aliasData = CONFIG['aliaser'][rootName]
-            source = COMPONENTS[aliasData['source']]
-            indexList = aliasData['indexList']
-            strokeList = [source.strokeList[index] for index in indexList]
-            root = Fragment(rootName, strokeList, source, indexList)
-            image = degenerator(root)
-            degeneracy[image] = root
-        elif rootName in COMPOUNDS:
-            compoundRootList.append(rootName)
-        elif rootName in CONFIG['classifier']:
-            relatedFeatureList = CONFIG['classifier'][rootName]
-            for feature in relatedFeatureList:
-                root = Singlet(feature)
-                image = degenerator(root)
-                degeneracy[image] = root
-        else:
-            raise ValueError(f'不能识别的字根：{rootName}')
-    return compoundRootList, degeneracy
+def buildRoots(CONFIG, COMPONENTS: Dict[str, Component], COMPOUNDS: Dict[str, Compound]):
+    #退化字根到字根的映射，用于构建 powerDict
+    componentRoot: Dict[str, Component] = {}
+    compoundRoot: Dict[str, None] = {}
+    for rootNameList in CONFIG['mapper'].values():
+        for rootName in rootNameList:
+            # 字根是「文」数据中的一个部件
+            if rootName in COMPONENTS:
+                root = COMPONENTS[rootName]
+                componentRoot[rootName] = root
+            # 字根不是「文」数据库中的部件，但用户定义了它
+            elif rootName in CONFIG['aliaser']:
+                aliasData = CONFIG['aliaser'][rootName]
+                source = COMPONENTS[aliasData['source']]
+                indexList = aliasData['indexList']
+                root = source.fragment(rootName, indexList)
+                componentRoot[rootName] = root
+            elif rootName in COMPOUNDS:
+                compoundRoot[rootName] = None
+            elif rootName in CONFIG['classifier']:
+                relatedFeatureList = CONFIG['classifier'][rootName]
+                for feature in relatedFeatureList:
+                    root = Component.singlet(feature)
+                    componentRoot[feature] = root
+            else:
+                raise ValueError(f'不能识别的字根：{rootName}')
+    return componentRoot, compoundRoot
