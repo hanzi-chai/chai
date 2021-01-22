@@ -14,7 +14,10 @@ jobs:
           - macos-latest
           - windows-latest
         python-version:
-          - 3.8
+          - '3.8'
+    env:
+      OS: ${{ matrix.os }}
+      PYTHON: '3.8'
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
@@ -24,9 +27,10 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - run: pip install -r requirements.txt
-      - run: coverage run -m unittest discover
+      - run: pytest --cov=./ --cov-report=xml
       - uses: codecov/codecov-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: .coverage
+          files: coverage.xml
+          env_vars: OS,PYTHON
           name: codecov

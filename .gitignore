@@ -3,7 +3,7 @@
 build
 html
 htmlcov
-.coverage
+coverage.xml
 pychai.egg-info
 pychai/cache/*.yaml
 *.dict.yaml
