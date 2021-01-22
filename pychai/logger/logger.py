@@ -1,11 +1,7 @@
-import logging
+from logging import Formatter, LogRecord
 
-FILENAME = 'pychai-debug.log'
-DATE_FMT = '%Y-%m-%d %H:%M:%S'
-MSG_FMT = '%(asctime)s|%(levelname)s|%(module)s - %(message)s'
-
-class BinaryDictFormatter(logging.Formatter):
-    def format(self, record: logging.LogRecord):
+class BinaryDictFormatter(Formatter):
+    def format(self, record: LogRecord):
         msg = record.msg
         if isinstance(msg, dict):
             record.msg = '{'
@@ -19,9 +15,3 @@ class BinaryDictFormatter(logging.Formatter):
             record.msg = msg
             return output
         return super().format(record)
-
-chaiLogger = logging.getLogger('binaryDictLogger')
-bdHandler = logging.FileHandler(FILENAME, encoding='utf-8')
-bdHandler.setLevel(logging.DEBUG)
-bdHandler.setFormatter(BinaryDictFormatter(MSG_FMT, DATE_FMT))
-chaiLogger.addHandler(bdHandler)

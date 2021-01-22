@@ -1,6 +1,5 @@
 from typing import List, Callable, Tuple
 from .character import Component
-from ..log import chaiLogger
 
 class Selector:
     '''
@@ -10,18 +9,18 @@ class Selector:
     def __init__(self, sieveList: List[Callable[[Component], None]]):
         self.sieveList = sieveList
 
-    def __call__(self, component: Component) -> Tuple[int, ...]:
+    def __call__(self, component: Component, logger) -> Tuple[int, ...]:
         schemeList = component.schemeList.copy()
-        chaiLogger.debug(f'择优列表：{schemeList}')
+        logger.debug(f'择优列表：{schemeList}')
         for sieve in self.sieveList:
-            chaiLogger.debug(f'择优函数：{sieve.__name__}')
+            logger.debug(f'择优函数：{sieve.__name__}')
             scoreList = [sieve(component, scheme) for scheme in schemeList]
-            chaiLogger.debug(f'择优得分：{scoreList}')
+            logger.debug(f'择优得分：{scoreList}')
             bestScore = min(scoreList)
             schemeList = [scheme
                 for scheme, score in zip(schemeList, scoreList)
                 if score == bestScore]
-            chaiLogger.debug(f'剩余列表：{schemeList}')
+            logger.debug(f'剩余列表：{schemeList}')
         if len(schemeList) == 1:
             # 理论上把字根的二进制表示放进去才完备，但除了 C 输入要用到之外都不用，先不写
             # return tuple(

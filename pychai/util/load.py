@@ -6,6 +6,8 @@ import yaml
 from yaml import BaseLoader, SafeLoader
 from .topology import topology
 from ..base import Stroke, Component, Compound
+from ..logger import BinaryDictFormatter
+import logging
 
 def loadInternal(path, withNumbers=True):
     '''从模块包中加载 YAML 数据库
@@ -76,7 +78,9 @@ def loadCompounds(COMPONENTS) -> Dict[str, Compound]:
     return COMPOUNDS
 
 def loadConfig(path) -> Dict:
-    config = loadExternal(path)
+    from __main__ import __file__ as file
+    inputfile = os.path.join(os.path.dirname(file), path)
+    config = loadExternal(inputfile)
     if 'classifier' in config:
         checkCompleteness(config['classifier'])
     if 'aliaser' in config:
@@ -85,6 +89,20 @@ def loadConfig(path) -> Dict:
             indexList = data['indexList']
             data['indexList'] = expandAliaser(indexList) # 展开省略式
     return config
+
+def stdout(path):
+    return open(path, 'w', encoding='utf-8')
+
+def stderr(path):
+    DATE_FMT = '%Y-%m-%d %H:%M:%S'
+    MSG_FMT = '%(asctime)s|%(levelname)s|%(module)s - %(message)s'
+
+    logger = logging.getLogger('binaryDictLogger')
+    bdHandler = logging.FileHandler(path, encoding='utf-8')
+    bdHandler.setLevel(logging.DEBUG)
+    bdHandler.setFormatter(BinaryDictFormatter(MSG_FMT, DATE_FMT))
+    logger.addHandler(bdHandler)
+    return logger
 
 def expandAliaser(aliaserValueList) -> list:
     '''展开形如 [1, ..., 6] 的省略式的笔画索引列

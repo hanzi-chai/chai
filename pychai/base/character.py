@@ -1,5 +1,5 @@
 from typing import List, Dict, Optional, Tuple
-from .object import Stroke
+from .stroke import Stroke
 
 class Character:
     '''
@@ -49,7 +49,10 @@ class Component(Character):
             'start'     : [],
             'curveList' : []
         })
-        return cls(name, [stroke], [])
+        return cls(name, [stroke], [[]])
+
+    @property
+    def length(self): return len(self.strokeList)
 
 class Compound(Character):
     '''

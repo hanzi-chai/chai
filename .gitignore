@@ -1,8 +1,11 @@
 .vscode
 **/__pycache__
 build
-dist
+html
+htmlcov
+.coverage
 pychai.egg-info
 pychai/cache/*.yaml
 *.dict.yaml
 *.result.yaml
+*.log

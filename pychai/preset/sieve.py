@@ -2,9 +2,8 @@
 预置择优函数组件
 '''
 
-from pychai.base.object import Stroke
 from typing import List, Tuple
-from ..base import Component
+from ..base import Stroke, Component
 
 def bias(_: Component, scheme):
     '''

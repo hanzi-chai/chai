@@ -1,3 +1,5 @@
+[![Build Status](https://github.com/hanzi-chai/chai/workflows/test/badge.svg)](https://github.com/hanzi-chai/chai/actions) [![Build Status](https://github.com/hanzi-chai/chai/workflows/documentation/badge.svg)](https://github.com/hanzi-chai/chai/actions) [![Coverage](https://codecov.io/gh/hanzi-chai/chai/branch/master/graph/badge.svg)](https://codecov.io/gh/hanzi-chai/chai/) [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://hanzi-chai.github.io/chai/)
+
 昔有仓颉作书，天雨粟，鬼夜哭；今有落萧拆字，以程序之力，解世纪难题。时值元旦，万象更新，特奉上「汉字自动拆分系统」1.0，以飨码者！
 
 ---

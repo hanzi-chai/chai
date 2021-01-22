@@ -1,5 +1,6 @@
 from unittest import TestCase
 from pychai.util import *
+from os.path import join, dirname
 
 class TestLoadBuild(TestCase):
     '''
@@ -7,12 +8,10 @@ class TestLoadBuild(TestCase):
     '''
     def test_all(self):
         GB = loadGB()
-        COMPONENTS = loadComponents()
+        COMPONENTS = loadComponentsWithTopology()
         COMPOUNDS = loadCompounds(COMPONENTS)
-        CONFIG = loadConfig('pychai/examples/wubi98/wubi98.config.yaml')
-        degenerator = buildDegenerator(CONFIG)
+        CONFIG = loadConfig(join(dirname(__file__), '../dummy/dummy.config.yaml'))
         selector = buildSelector(CONFIG)
         storkeClassifier = buildClassifier(CONFIG)
         rootMap = buildRootMap(CONFIG)
-        compoundRootList, degeneracy = buildDegeneracy(CONFIG, degenerator,
-            COMPONENTS, COMPOUNDS)
+        componentRoot, compoundRoot = buildRoots(CONFIG, COMPONENTS, COMPOUNDS)

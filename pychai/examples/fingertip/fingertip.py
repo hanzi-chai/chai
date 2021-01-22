@@ -2,12 +2,19 @@
 实现鸽码
 '''
 
-from pychai import Sequential, Character, Component, Compound
+from pychai import Sequential, Character, Component, Compound, loadConfig, stdout, stderr
+from os.path import join, dirname
 
 class FingerTip(Sequential):
     '''
     叶类
     '''
+    def __init__(self, **kwargs):
+        d = dirname(__file__)
+        self.CONFIG = loadConfig(join(d, 'wubi98.config.yaml'))
+        self.STDOUT = stdout(join(d, 'wubi98.result.yaml'))
+        self.STDERR = stderr(join(d, 'wubi98.log'))
+        super().__init__(**kwargs)
 
     def _encode(self, character: Character) -> str:
         if isinstance(character, Component):
@@ -36,5 +43,6 @@ class FingerTip(Sequential):
             scheme = (scheme + (scheme[-1:] * 3))[:4]
         return ''.join([self.rootMap[root.name] for root in scheme])
 
-fingertip = FingerTip('examples/fingertip/fingertip.config.yaml')
-fingertip.chai('examples/fingertip/fingertip.result.yaml')
+if __name__ == '__main__':
+    fingertip = FingerTip(debug=True)
+    fingertip()
