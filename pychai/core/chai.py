@@ -15,12 +15,14 @@ class Chai(ABC):
     抽象基类
     '''
 
-
     def __init__(self, debug=False):
         if debug: self.STDERR.setLevel(10)
         self.GB                 = loadGB()
+        '''保存 GB 字集'''
         self.COMPONENTS         = loadComponentsWithTopology()
+        '''保存所有部件的名称到部件的映射'''
         self.COMPOUNDS          = loadCompounds(self.COMPONENTS)
+        '''保存所有复合体的名称到复合体的映射'''
         self.selector: Selector = buildSelector(self.CONFIG)
         self.classifier         = buildClassifier(self.CONFIG)
         self.rootMap            = buildRootMap(self.CONFIG)
@@ -40,14 +42,23 @@ class Chai(ABC):
         pass
 
     def getComponentScheme(self) -> None:
+        '''
+        向所有 ``self.COMPONENTS`` 中的部件注入拆分方案
+        '''
         for component in self.COMPONENTS.values():
             component.scheme = self._getComponentScheme(component)
 
     def getCompoundScheme(self) -> None:
+        '''
+        向所有 ``self.COMPOUNDS`` 中的部件注入拆分方案
+        '''
         for compound in self.COMPOUNDS.values():
             compound.scheme = self._getCompoundScheme(compound)
 
     def encode(self) -> None:
+        '''
+        向所有 ``self.GB`` 中的汉字注入编码
+        '''
         for characterName in self.GB:
             if characterName in self.COMPONENTS:
                 character = self.COMPONENTS[characterName]
@@ -56,6 +67,9 @@ class Chai(ABC):
             character.code = self._encode(character)
 
     def __call__(self) -> None:
+        '''
+        将所有 ``self.GB`` 中汉字的编码写入 ``self.STDOUT``
+        '''
         t0 = time.time()
         self.getComponentScheme()
         t1 = time.time()

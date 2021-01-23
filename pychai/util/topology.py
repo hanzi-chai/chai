@@ -25,11 +25,11 @@ def relationStr(t1: float, t2: float, c1: Curve, c2: Curve):
 def linear(c1: Linear, c2: Linear):
     '''求一次 Bezier 曲线（直线段）交点的 t1, t2 值
     '''
-    p1 = c1.P1 - c1.P0
-    p2 = c2.P1 - c2.P0
+    p1 = c1.p1 - c1.p0
+    p2 = c2.p1 - c2.p0
     det = cross(p1, p2)
     if det == 0: return array([inf, inf])
-    b = c2.P0 - c1.P0
+    b = c2.p0 - c1.p0
     t1 = cross(b, p2) / det
     t2 = cross(b, p1) / det
     return array([t1, t2])

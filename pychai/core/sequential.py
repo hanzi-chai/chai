@@ -14,19 +14,13 @@ class Sequential(Chai):
     '''
 
     @staticmethod
-    def generateSliceBinaries(component: Component, root: Component):
+    def generateSliceBinaries(component: Component, root: Component) -> List[int]:
         '''
-        找出一个字根在一个部件中的所有有效切片
-        参数:
-            component: 待拆部件
-            root: 根部件
-        输出:
-            List[int]: 根部件在待拆部件中的所有有效切片，切片用二进制表示。没有找到切片时返回
-            空列表。
-            例: 待拆部件“天”，根部件“大”。“大”在“天”中的有效的切片为“天”的第2、3、4笔。“天”
-            的笔画列表为['横', '横', '撇', '捺']，每一位都取用 index 列表表示为[0,1,2,3]
-            二进制表示为 0b1111 ，只取后三笔用 index 列表表示为[1,2,3]，二进制表示为 0b0111，
-            即整型数字 7 。故输出为 [7]。
+        :param component: 待拆部件
+        :param root: 根部件
+        :returns: 根部件在待拆部件中的所有有效切片，切片用二进制表示。没有找到切片时返回空列表。
+
+        找出一个字根在一个部件中的所有有效切片。例: 待拆部件“天”，根部件“大”。“大”在“天”中的有效的切片为“天”的第2、3、4笔。“天” 的笔画列表为['横', '横', '撇', '捺']，每一位都取用 index 列表表示为[0,1,2,3]，二进制表示为 0b1111，只取后三笔用 index 列表表示为[1,2,3]，二进制表示为 0b0111，即整型数字 7 。故输出为 [7]。
         '''
         if component.length < root.length: return []
         if root.name == '囗':
@@ -55,13 +49,11 @@ class Sequential(Chai):
         return [component.indexListToBinary(indexList) for indexList in validIndexListQueue]
 
     def generateScheme(self, component: Component) -> Tuple[Component, ...]:
-        '''找出部件在根集中的所有可行组合
+        '''
+        找出部件在根集中的所有可行组合
 
-        参数:
-            component: 待组合的部件
-
-        输出:
-            Tuple[int,...]: 最优组合，根用切片二进制数表示
+        :param component: 待组合的部件
+        :returns: 最优组合，根用切片二进制数表示
         '''
         for root in self.componentRoot.values():
             sliceBinaryList = Sequential.generateSliceBinaries(component, root)

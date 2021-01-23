@@ -1,8 +1,4 @@
-'''
-基础
-'''
-
-from .curve import Linear, Cubic, Curve
-from .stroke import Stroke
-from .character import Character, Component, Compound
-from .selector import Selector
+from .curve import *
+from .stroke import *
+from .character import *
+from .selector import *

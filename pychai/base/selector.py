@@ -4,12 +4,22 @@ from .character import Component
 class Selector:
     '''
     选择器
+
+    :param sieveList: 由筛构成的列表
+
+    >>> selector = Selector(sieveList: List[Callable])
     '''
 
-    def __init__(self, sieveList: List[Callable[[Component], None]]):
+    def __init__(self, sieveList: List[Callable]):
         self.sieveList = sieveList
+        '''由筛构成的列表'''
 
     def __call__(self, component: Component, logger) -> Tuple[int, ...]:
+        '''
+        :param component: 已经存储了所有可能拆分方案部件
+        :param logger: 用于调试
+        :returns: 最优拆分方案对应的二进制表示元组
+        '''
         schemeList = component.schemeList.copy()
         logger.debug(f'择优列表：{schemeList}')
         for sieve in self.sieveList:

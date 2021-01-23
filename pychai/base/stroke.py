@@ -1,20 +1,23 @@
-'''
-
-'''
-
 from functools import cached_property
 from typing import List, Dict
 from numpy import array
+from numpy import ndarray as Point
 from .curve import Linear, Cubic
 
 class Stroke:
     '''
-    笔画
+    笔画是由一段或多段曲线首尾相接组成的几何图形，通常记作 :math:`s`。
+
+    :param data: 数据字典，形式类似于 {feature: 横, start: [0, 0], curveList: [{command: h, parameterList: [10]}]}
+
     '''
     def __init__(self, data: Dict):
         self.feature: str = data['feature']
-        self.start: array = array(data['start'])
+        '''笔画的笔形，如横、竖等'''
+        self.start: Point = array(data['start'])
+        '''笔画的起点'''
         self.curveList: List[Curve] = []
+        '''笔画的所有曲线构成的列表'''
         for curveData in data['curveList']:
             curve = self.factory(curveData)
             self.curveList.append(curve)
@@ -48,6 +51,9 @@ class Stroke:
 
     @cached_property
     def linearizeLength(self):
+        '''
+        :returns: 笔画所包含的所有曲线的线性长度之和
+        '''
         return sum(curve.linearizeLength() for curve in self.curveList)
 
     def __str__(self):
