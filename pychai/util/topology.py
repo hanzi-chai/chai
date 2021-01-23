@@ -79,10 +79,10 @@ def position(c1: Curve, c2: Curve):
     输出：
         str: 位置描述。
     '''
-    start1 = c1.P0
-    end1 = c1.P1 if isinstance(c1, Linear) else c1.P3
-    start2 = c2.P0
-    end2 = c2.P1 if isinstance(c2, Linear) else c2.P3
+    start1 = c1.p0
+    end1 = c1.p1 if isinstance(c1, Linear) else c1.p3
+    start2 = c2.p0
+    end2 = c2.p1 if isinstance(c2, Linear) else c2.p3
     x1 = [start1[0], end1[0]]
     y1 = [start1[1], end1[1]]
     x2 = [start2[0], end2[0]]
