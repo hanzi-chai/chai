@@ -14,9 +14,6 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath('..'))
 
-print(sys.path)
-
-
 # -- Project information -----------------------------------------------------
 
 project = '汉字自动拆分系统'
@@ -67,7 +64,13 @@ html_static_path = ['_static']
 
 html_search_language = 'zh'
 
-html_search_options = {'dict': os.path.expanduser('~/Library/anaconda3/envs/Chai/lib/python3.8/site-packages/jieba/dict.txt')}
+from pkgutil import get_data
+
+with open('dict.txt', 'w') as f:
+    jieba = get_data('jieba', 'dict.txt').decode()
+    f.write(jieba)
+
+html_search_options = {'dict': 'dict.txt'}
 
 mathjax_config = {
     'TeX': {
