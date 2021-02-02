@@ -1,0 +1,6 @@
+# 所有 text 文件都以 lf 为 eol
+* text eol=lf
+
+# 标记非 text 二进制文件，以免 git 对其进行 eol 转换处理产生数据污染
+*.jpg binary
+*.png binary
