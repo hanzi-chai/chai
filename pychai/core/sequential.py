@@ -5,7 +5,7 @@ from bisect import bisect_left, bisect_right
 from typing import List, Tuple
 from collections import deque
 from .chai import Chai
-from ..base import Component, Compound
+from ..base import Component, Compound, Character
 from ..util import strokeFeatureEqual
 
 class Sequential(Chai):
@@ -64,8 +64,6 @@ class Sequential(Chai):
         schemeList : List[Tuple[int,...]] = []
         if listLength == 0:
             return schemeList
-        self.STDERR.debug(f'{component.name}')
-        self.STDERR.debug(component.binaryDict)
         sliceBinaryList.sort()
         finishBinary = 2 ** component.length - 1
         def combineNext(currentBinary: int, currentCombination: Tuple[int,...]):
@@ -84,7 +82,7 @@ class Sequential(Chai):
                         combineNext(newBinary, expandedCombination)
         combineNext(0,())
         component.schemeList = schemeList
-        schemeBinary = self.selector(component, self.STDERR)
+        schemeBinary = self.selector(component)
         return tuple(map(lambda x: component.binaryDict[x], schemeBinary))
 
     def _getComponentScheme(self, component: Component) -> Tuple[Component, ...]:
@@ -96,3 +94,6 @@ class Sequential(Chai):
     def _getCompoundScheme(self, compound: Compound) -> Tuple[Component, ...]:
         firstChild, secondChild = compound.firstChild, compound.secondChild
         return firstChild.scheme + secondChild.scheme
+
+    def _log(self, character: Character) -> None:
+        self.STDERR.debug(character)

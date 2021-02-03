@@ -1,17 +1,20 @@
 from logging import Formatter, LogRecord
+from typing import Dict
+from ..base import Component
 
-class BinaryDictFormatter(Formatter):
+class DecompositionFormatter(Formatter):
     def format(self, record: LogRecord):
-        msg = record.msg
-        if isinstance(msg, dict):
-            record.msg = '{'
-            output = super().format(record) + '\n'
-            for k,v in msg.items():
-                binaryStr = bin(k)[2:]
-                record.msg = f'{binaryStr:>20s} : {v.name:<4s} {k}'
-                output += super().format(record) + '\n'
-            record.msg = '}'
-            output += super().format(record)
-            record.msg = msg
-            return output
-        return super().format(record)
+        component: Component = record.msg
+        output = f'{component.name}:\n\n#二进制表示:\n'
+        for binary, root in component.binaryDict.items():
+            record.msg = f'- {binary:0{component.length}b} : {root.name}'
+            output += f'{super().format(record)}\n'
+        output += '\n#筛选过程:\n'
+        for info in component.infoList:
+            sieveName = info['name']
+            output += f'- {sieveName}:\n'
+            schemeAndScoreList = info['schemeAndScoreList']
+            for scheme, score in schemeAndScoreList:
+                descriptor = ', '.join(f'{binary:0{component.length}b}[{component.binaryDict[binary].name}]' for binary in scheme)
+                output += f'  - {descriptor}: {score}\n'
+        return output

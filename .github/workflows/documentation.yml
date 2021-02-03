@@ -17,6 +17,7 @@ jobs:
         python-version: 3.8
     - run: pip install -r requirements.txt
     - run: sphinx-build -b html doc/ html/
+    - run: touch html/.jekyll
     - uses: crazy-max/ghaction-github-pages@v2
       with:
         target_branch: gh-pages

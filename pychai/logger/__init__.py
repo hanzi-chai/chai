@@ -1,1 +1,1 @@
-from .logger import BinaryDictFormatter
+from .logger import *
