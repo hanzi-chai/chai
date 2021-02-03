@@ -2,19 +2,12 @@
 实现五笔
 '''
 
-from pychai import Sequential, Character, loadConfig, stdout, stderr
-from os.path import join, dirname
+from pychai import Sequential, Character
 
 class Wubi98(Sequential):
     '''
     叶类
     '''
-    def __init__(self, **kwargs):
-        d = dirname(__file__)
-        self.CONFIG = loadConfig(join(d, 'wubi98.config.yaml'))
-        self.STDOUT = stdout(join(d, 'wubi98.result.yaml'))
-        self.STDERR = stderr(join(d, 'wubi98.log'))
-        super().__init__(**kwargs)
 
     def _encode(self, character: Character) -> str:
         scheme = character.scheme
@@ -55,7 +48,10 @@ class Wubi98(Sequential):
             code = ''.join([self.rootMap[root.name] for root in usefulScheme])
         return code
 
-# 实例化拆分对象
-if __name__ == "__main__":
-    wubi98 = Wubi98(debug=True)
-    wubi98()
+Wubi98(
+    charset='test',
+    config='wubi98.config.yaml',
+    result='wubi98.result.yaml',
+    log='wubi98.log',
+    reference='wubi98.dict.yaml'
+)()

@@ -8,7 +8,7 @@ class TestLoadBuild(TestCase):
     '''
     def test_all(self):
         GB = loadGB()
-        COMPONENTS = loadComponentsWithTopology()
+        COMPONENTS = loadComponents(withTopology=True, withCorner=True)
         COMPOUNDS = loadCompounds(COMPONENTS)
         CONFIG = loadConfig(join(dirname(__file__), '../dummy/dummy.config.yaml'))
         selector = buildSelector(CONFIG)
