@@ -1,13 +1,15 @@
 import os
+from os.path import join, dirname
 from pathlib import Path
 from pkgutil import get_data
 from typing import List, Dict
+from logging import getLogger, FileHandler, DEBUG
 import yaml
 from yaml import BaseLoader, SafeLoader
+from .corner import findCorner
 from .topology import topology
 from ..base import Stroke, Component, Compound
-from ..logger import BinaryDictFormatter
-import logging
+from ..logger import DecompositionFormatter
 
 def loadInternal(path, withNumbers=True):
     '''从模块包中加载 YAML 数据库
@@ -38,32 +40,43 @@ def loadExternal(path, withNumbers=True):
 def loadGB() -> List[str]:
     return loadInternal('../data/GB.yaml')
 
-def loadComponents() -> Dict[str, Component]:
+def loadComponents(withTopology=False, withCorner=False) -> Dict[str, Component]:
     data = loadInternal('../data/components.yaml')
     COMPONENTS = {}
     for name, componentData in data.items():
         strokeList = [Stroke(strokeData) for strokeData in componentData]
         COMPONENTS[name] = Component(name, strokeList, None)
+    if withTopology:
+        topologyPath = join(dirname(dirname(__file__)), 'cache/topology.yaml')
+        if not Path(topologyPath).exists(): buildTopology(COMPONENTS, topologyPath)
+        TOPOLOGIES = loadInternal('../cache/topology.yaml')
+        for name, component in COMPONENTS.items():
+            component.topologyMatrix = TOPOLOGIES[name]
+    if withCorner:
+        cornerPath = join(dirname(dirname(__file__)), 'cache/corner.yaml')
+        if not Path(cornerPath).exists(): buildCorner(COMPONENTS, cornerPath)
+        CORNERS = loadInternal('../cache/corner.yaml')
+        for name, component in COMPONENTS.items():
+            component.corner = CORNERS[name]
     return COMPONENTS
 
-def loadComponentsWithTopology() -> Dict[str, Component]:
-    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'cache/topology.yaml')
-    file = Path(path)
-    COMPONENTS = loadComponents()
-    if not file.exists():
-        TOPOLOGIES = {}
-        for componentName, component in COMPONENTS.items():
-            topologyMatrix = topology(component)
-            component.topologyMatrix = topologyMatrix
-            TOPOLOGIES[componentName] = topologyMatrix
-        with open(path, 'w', encoding='utf-8') as file:
-            for componentName, topologyList in TOPOLOGIES.items():
-                file.write(f'{componentName}: {topologyList}\n')
-        return COMPONENTS
-    TOPOLOGIES = loadInternal('../cache/topology.yaml')
-    for name, component in COMPONENTS.items():
-        component.topologyMatrix = TOPOLOGIES[name]
-    return COMPONENTS
+def buildTopology(COMPONENTS, topologyPath) -> None:
+    TOPOLOGIES = {}
+    for componentName, component in COMPONENTS.items():
+        topologyMatrix = topology(component)
+        TOPOLOGIES[componentName] = topologyMatrix
+    with open(topologyPath, 'w', encoding='utf-8') as file:
+        for componentName, topologyList in TOPOLOGIES.items():
+            file.write(f'{componentName}: {topologyList}\n')
+
+def buildCorner(COMPONENTS, cornerPath) -> None:
+    CORNERS = {}
+    for componentName, component in COMPONENTS.items():
+        corner = findCorner(component)
+        CORNERS[componentName] = corner
+    with open(cornerPath, 'w', encoding='utf-8') as file:
+        for componentName, topologyList in CORNERS.items():
+            file.write(f'{componentName}: {topologyList}\n')
 
 def loadCompounds(COMPONENTS) -> Dict[str, Compound]:
     data = loadInternal('../data/compounds.yaml')
@@ -78,9 +91,7 @@ def loadCompounds(COMPONENTS) -> Dict[str, Compound]:
     return COMPOUNDS
 
 def loadConfig(path) -> Dict:
-    from __main__ import __file__ as file
-    inputfile = os.path.join(os.path.dirname(file), path)
-    config = loadExternal(inputfile)
+    config = loadExternal(path)
     if 'classifier' in config:
         checkCompleteness(config['classifier'])
     if 'aliaser' in config:
@@ -94,14 +105,13 @@ def stdout(path):
     return open(path, 'w', encoding='utf-8')
 
 def stderr(path):
-    DATE_FMT = '%Y-%m-%d %H:%M:%S'
-    MSG_FMT = '%(asctime)s|%(levelname)s|%(module)s - %(message)s'
+    MSG_FMT = '%(message)s'
 
-    logger = logging.getLogger('binaryDictLogger')
-    bdHandler = logging.FileHandler(path, encoding='utf-8')
-    bdHandler.setLevel(logging.DEBUG)
-    bdHandler.setFormatter(BinaryDictFormatter(MSG_FMT, DATE_FMT))
-    logger.addHandler(bdHandler)
+    logger = getLogger('binaryDictLogger')
+    handler = FileHandler(path, encoding='utf-8')
+    handler.setLevel(DEBUG)
+    handler.setFormatter(DecompositionFormatter(MSG_FMT))
+    logger.addHandler(handler)
     return logger
 
 def expandAliaser(aliaserValueList) -> list:

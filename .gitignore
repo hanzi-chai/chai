@@ -9,3 +9,4 @@ pychai/cache/*.yaml
 *.dict.yaml
 *.result.yaml
 *.log
+.coverage

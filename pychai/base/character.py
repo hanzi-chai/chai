@@ -10,6 +10,7 @@ class Character:
         self.operator                     = operator
         self.scheme: Tuple[Component,...] = ()
         self.code                         = ''
+        self.infoList = []
 
 class Component(Character):
     '''

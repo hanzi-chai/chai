@@ -62,6 +62,8 @@ class Linear(Curve):
     def __init__(self, p0: Point, p1: Point):
         self.p0 = p0
         self.p1 = p1
+        self.start = p0
+        self.end = p1
 
     def __call__(self, t: float) -> Point:
         return (1 - t) * self.p0 + t * self.p1
@@ -99,6 +101,8 @@ class Cubic(Curve):
         self.p1 = p1
         self.p2 = p2
         self.p3 = p3
+        self.start = p0
+        self.end = p3
 
     def __call__(self, t: float) -> Point:
         return (1 - t)**3 * self.p0 + 3 * (1 - t)**2 * t * self.p1 + 3 * (1 - t) * t**2 * self.p2 + t**3 * self.p3
