@@ -49,6 +49,16 @@ class Stroke:
             self.start = P3
             return curve
 
+    def featureEuqal(self, another: Stroke) -> bool:
+        
+        if self.feature != another.feature:
+            if self.feature == '点':
+                return another.feature == '捺'
+            elif self.feature == '捺':
+                return another.feature == '点'
+            return False
+        return True
+
     @cached_property
     def linearizeLength(self):
         '''
