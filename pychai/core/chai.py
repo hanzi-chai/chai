@@ -48,6 +48,10 @@ class Chai(ABC):
     def _encode(self, character: Character) -> str:
         pass
 
+    @abstractmethod
+    def _log(self, character: Character) -> None:
+        pass
+
     def getComponentScheme(self) -> None:
         '''
         向所有 ``self.COMPONENTS`` 中的部件注入拆分方案

@@ -2,7 +2,7 @@ from functools import cached_property
 from typing import List, Dict
 from numpy import array
 from numpy import ndarray as Point
-from .curve import Linear, Cubic
+from .curve import Curve, Linear, Cubic
 
 class Stroke:
     '''
