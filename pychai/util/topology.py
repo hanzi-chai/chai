@@ -108,7 +108,7 @@ def position(c1: Curve, c2: Curve):
     strY = '下' if resultY == -1 else '上' if resultY == 1 else ''
     return strX + strY
 
-def topology(component: Component) -> List[List[str]]:
+def findTopology(component: Component) -> List[List[str]]:
     '''生成 Component 对象的拓扑描述矩阵
 
     输入：

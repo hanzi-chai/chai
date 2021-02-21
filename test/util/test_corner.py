@@ -1,7 +1,7 @@
 from numpy import array
-from pychai.util import findCorner, isNearThan, findCriticalPoints, loadComponents
+from pychai.util import findCorner, isNearThan, findCriticalPoints, loadData
 
-COMPONENTS = loadComponents()
+COMPONENTS, _ = loadData()
 
 def test_isNearThan():
     p0 = array([0, 0])

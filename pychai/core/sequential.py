@@ -6,12 +6,16 @@ from typing import List, Tuple
 from collections import deque
 from .chai import Chai
 from ..base import Component, Compound, Character
-from ..util import strokeFeatureEqual
+from ..util import strokeFeatureEqual, findCorner
 
 class Sequential(Chai):
     '''
     经典形码
     '''
+
+    def __init__(self, withCornerInformation=False, **kwargs):
+        self.withCornerInformation = withCornerInformation
+        super().__init__(**kwargs)
 
     @staticmethod
     def generateSliceBinaries(component: Component, root: Component) -> List[int]:
@@ -83,17 +87,45 @@ class Sequential(Chai):
         combineNext(0,())
         component.schemeList = schemeList
         schemeBinary = self.selector(component)
-        return tuple(map(lambda x: component.binaryDict[x], schemeBinary))
+        return schemeBinary
 
     def _getComponentScheme(self, component: Component) -> Tuple[Component, ...]:
         if component.name in self.componentRoot:
             return (self.componentRoot[component.name],)
-        else:
-            return self.generateScheme(component)
+        schemeBinary = self.generateScheme(component)
+        scheme = tuple(map(lambda x: component.binaryDict[x], schemeBinary))
+        if not self.withCornerInformation:
+            return scheme
+        def findRoot(index):
+            binary = 1 << (component.length - index - 1)
+            cornerRootBinary, = filter(lambda x: x & binary, schemeBinary)
+            root = component.binaryDict[cornerRootBinary]
+        lt, rt, lb, rb = map(findRoot, findCorner(component))
+        return {
+            'all': scheme,
+            'lt': lt,
+            'rt': rt,
+            'lb': lb,
+            'rb': rb
+        }
 
     def _getCompoundScheme(self, compound: Compound) -> Tuple[Component, ...]:
         firstChild, secondChild = compound.firstChild, compound.secondChild
-        return firstChild.scheme + secondChild.scheme
+        scheme = firstChild.scheme + secondChild.scheme
+        if not self.withCornerInformation:
+            return scheme
+        operator = compound.operator
+        lt = firstChild.scheme['lt']
+        rt = secondChild.scheme['rt'] if operator in 'hl' else firstChild.scheme['rt']
+        lb = secondChild.scheme['lb'] if operator in 'zq' else firstChild.scheme['lb']
+        rb = secondChild.scheme['lb'] if operator in 'hz' else firstChild.scheme['lb']
+        return {
+            'all': scheme,
+            'lt': lt,
+            'rt': rt,
+            'lb': lb,
+            'rb': rb
+        }
 
     def _log(self, character: Character) -> None:
         self.STDERR.debug(character)

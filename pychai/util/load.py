@@ -1,97 +1,59 @@
-import os
-from os.path import join, dirname
-from pathlib import Path
-from pkgutil import get_data
-from typing import List, Dict
+from os.path import join, dirname, exists
+from typing import List, Dict, Tuple
 from logging import getLogger, FileHandler, DEBUG
-import yaml
-from yaml import BaseLoader, SafeLoader
-from .corner import findCorner
-from .topology import topology
+from re import compile as RE
+from sqlite3 import connect
+from pickle import load
+from yaml import BaseLoader, SafeLoader, load as loadyaml
+from .build import buildTopology, buildCorner
 from ..base import Stroke, Component, Compound
 from ..logger import DecompositionFormatter
 
-def loadInternal(path, withNumbers=True):
-    '''从模块包中加载 YAML 数据库
+def _path(relativePath):
+    return join(dirname(__file__), relativePath)
 
-    参数：
-        path: 路径
-        withNumbers: 是否含数字类型数据
-
-    输出：yaml 解析器加载后的数据
-    '''
-    data = get_data(__package__, path).decode()
-    loader = SafeLoader if withNumbers else BaseLoader
-    return yaml.load(data, loader)
-
-def loadExternal(path, withNumbers=True):
-    '''从外部加载 YAML 数据库
-
-    参数：
-        path: 路径
-        withNumbers: 是否含数字类型数据
-
-    输出：yaml 解析器加载后的数据
-    '''
-    loader = SafeLoader if withNumbers else BaseLoader
-    with open(path, encoding='utf-8') as file:
-        return yaml.load(file, loader)
-
-def loadGB() -> List[str]:
-    return loadInternal('../data/GB.yaml')
-
-def loadComponents(withTopology=False, withCorner=False) -> Dict[str, Component]:
-    data = loadInternal('../data/components.yaml')
+def loadData(withTopology=False, withCorner=False) -> Tuple[Dict[str, Component], Dict[str, Compound]]:
+    databasePath = _path('../data/main')
+    database = connect(databasePath)
+    cursor = database.cursor()
+    strokeDataPattern = RE(r'(?<=\d)(?=M)')
     COMPONENTS = {}
-    for name, componentData in data.items():
-        strokeList = [Stroke(strokeData) for strokeData in componentData]
-        COMPONENTS[name] = Component(name, strokeList, None)
+    for row in cursor.execute('SELECT name, gb, pinyin, feature, svg FROM main WHERE operator IS NULL;'):
+        name, inGB, pinyinString, featureString, svgString = row
+        pinyinList = [] if pinyinString is None else pinyinString.split(',')
+        featureList = featureString.split(',')
+        svgList = strokeDataPattern.split(svgString)
+        strokeList = [Stroke(feature, svg) for feature, svg in zip(featureList, svgList)]
+        COMPONENTS[name] = Component(name, strokeList, None, inGB=inGB, pinyinList=pinyinList)
     if withTopology:
-        topologyPath = join(dirname(dirname(__file__)), 'cache/topology.yaml')
-        if not Path(topologyPath).exists(): buildTopology(COMPONENTS, topologyPath)
-        TOPOLOGIES = loadInternal('../cache/topology.yaml')
+        topologyPath = _path('../data/topology')
+        if not exists(topologyPath): buildTopology(COMPONENTS, topologyPath)
+        with open(topologyPath, 'rb') as f: TOPOLOGIES = load(f)
         for name, component in COMPONENTS.items():
             component.topologyMatrix = TOPOLOGIES[name]
     if withCorner:
-        cornerPath = join(dirname(dirname(__file__)), 'cache/corner.yaml')
-        if not Path(cornerPath).exists(): buildCorner(COMPONENTS, cornerPath)
-        CORNERS = loadInternal('../cache/corner.yaml')
+        cornerPath = _path('../data/corner')
+        if not exists(cornerPath): buildCorner(COMPONENTS, cornerPath)
+        with open(cornerPath, 'rb') as f: CORNERS = load(f)
         for name, component in COMPONENTS.items():
             component.corner = CORNERS[name]
-    return COMPONENTS
-
-def buildTopology(COMPONENTS, topologyPath) -> None:
-    TOPOLOGIES = {}
-    for componentName, component in COMPONENTS.items():
-        topologyMatrix = topology(component)
-        TOPOLOGIES[componentName] = topologyMatrix
-    with open(topologyPath, 'w', encoding='utf-8') as file:
-        for componentName, topologyList in TOPOLOGIES.items():
-            file.write(f'{componentName}: {topologyList}\n')
-
-def buildCorner(COMPONENTS, cornerPath) -> None:
-    CORNERS = {}
-    for componentName, component in COMPONENTS.items():
-        corner = findCorner(component)
-        CORNERS[componentName] = corner
-    with open(cornerPath, 'w', encoding='utf-8') as file:
-        for componentName, topologyList in CORNERS.items():
-            file.write(f'{componentName}: {topologyList}\n')
-
-def loadCompounds(COMPONENTS) -> Dict[str, Compound]:
-    data = loadInternal('../data/compounds.yaml')
     COMPOUNDS = {}
-    for name, compoundData in data.items():
-        operator = compoundData['operator']
-        firstChildName, secondChildName = compoundData['operandList']
-        firstChild = COMPONENTS[firstChildName] if firstChildName in COMPONENTS else COMPOUNDS[firstChildName]
-        secondChild = COMPONENTS[secondChildName] if secondChildName in COMPONENTS else COMPOUNDS[secondChildName]
-        mix = compoundData.get('mix')
-        COMPOUNDS[name] = Compound(name, operator, firstChild, secondChild, mix)
-    return COMPOUNDS
+    compoundData = cursor.execute('SELECT name, gb, pinyin, operator, first, second, mix FROM main WHERE operator IS NOT NULL;').fetchall()
+    while compoundData:
+        row = compoundData.pop(0)
+        name, inGB, pinyinString, operator, firstChildName, secondChildName, mix = row
+        pinyinList = [] if pinyinString is None else pinyinString.split(',')
+        firstChild = COMPONENTS.get(firstChildName, COMPOUNDS.get(firstChildName))
+        secondChild = COMPONENTS.get(secondChildName, COMPOUNDS.get(secondChildName))
+        if firstChild and secondChild:
+            COMPOUNDS[name] = Compound(name, operator, firstChild, secondChild, mix, inGB=inGB, pinyinList=pinyinList)
+        else:
+            compoundData.append(row)
+    return COMPONENTS, COMPOUNDS
 
 def loadConfig(path) -> Dict:
-    config = loadExternal(path)
+    with open(path, encoding='utf-8') as file:
+        config = loadyaml(file, SafeLoader)
     if 'classifier' in config:
         checkCompleteness(config['classifier'])
     if 'aliaser' in config:
@@ -100,6 +62,10 @@ def loadConfig(path) -> Dict:
             indexList = data['indexList']
             data['indexList'] = expandAliaser(indexList) # 展开省略式
     return config
+
+def loadReference(path):
+    with open(path, encoding='utf-8') as file:
+        return loadyaml(file, BaseLoader)
 
 def stdout(path):
     return open(path, 'w', encoding='utf-8')

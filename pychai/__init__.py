@@ -2,6 +2,6 @@
 文档
 '''
 
-from .base import Character
-from .core import Sequential
+from .base import *
+from .core import *
 from .util import *

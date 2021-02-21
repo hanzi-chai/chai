@@ -3,51 +3,51 @@ from typing import List, Dict
 from numpy import array
 from numpy import ndarray as Point
 from .curve import Curve, Linear, Cubic
+from re import compile as RE
 
 class Stroke:
     '''
     笔画是由一段或多段曲线首尾相接组成的几何图形，通常记作 :math:`s`。
 
-    :param data: 数据字典，形式类似于 {feature: 横, start: [0, 0], curveList: [{command: h, parameterList: [10]}]}
+    :param feature: 笔形，如「横」「竖」「横折」「竖折提」等等
+    :param svg: 表示整个笔画的 svg 字符串
 
     '''
-    def __init__(self, data: Dict):
-        self.feature: str = data['feature']
+    commandSplitter = RE(r'(?<=\d)(?=[hvlc])')
+
+    def __init__(self, feature: str, svg: str):
+        self.feature = feature
         '''笔画的笔形，如横、竖等'''
-        self.start: Point = array(data['start'])
-        '''笔画的起点'''
         self.curveList: List[Curve] = []
         '''笔画的所有曲线构成的列表'''
-        for curveData in data['curveList']:
-            curve = self.factory(curveData)
+        commandList = self.commandSplitter.split(svg)
+        position: Point = array([int(x) for x in commandList.pop(0)[1:].split(' ')])
+        for curveString in commandList:
+            curve, position = self.factory(position, curveString)
             self.curveList.append(curve)
 
-    def factory(self, curveData):
-        command = curveData['command']
-        parameterList = curveData['parameterList']
-        P0 = self.start
+    def factory(self, position, curveString):
+        command = curveString[0]
+        parameterList = [int(x) for x in curveString[1:].split(' ')]
+        p0 = position
         if command == 'h':
-            P1 = P0 + array(parameterList + [0])
-            curve = Linear(P0, P1)
-            self.start = P1
-            return curve
+            p1 = p0 + array(parameterList + [0])
+            curve = Linear(p0, p1)
+            return curve, p1
         elif command == 'v':
-            P1 = P0 + array([0] + parameterList)
-            curve = Linear(P0, P1)
-            self.start = P1
-            return curve
+            p1 = p0 + array([0] + parameterList)
+            curve = Linear(p0, p1)
+            return curve, p1
         elif command == 'l':
-            P1 = P0 + array(parameterList)
-            curve = Linear(P0, P1)
-            self.start = P1
-            return curve
+            p1 = p0 + array(parameterList)
+            curve = Linear(p0, p1)
+            return curve, p1
         else:
-            P1 = P0 + array(parameterList[:2])
-            P2 = P0 + array(parameterList[2:4])
-            P3 = P0 + array(parameterList[4:])
-            curve = Cubic(P0, P1, P2, P3)
-            self.start = P3
-            return curve
+            p1 = p0 + array(parameterList[:2])
+            p2 = p0 + array(parameterList[2:4])
+            p3 = p0 + array(parameterList[4:])
+            curve = Cubic(p0, p1, p2, p3)
+            return curve, p3
 
     @cached_property
     def linearizeLength(self):

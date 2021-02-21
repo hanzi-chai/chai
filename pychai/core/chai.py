@@ -5,7 +5,7 @@ Chai 基类
 from abc import ABC, abstractmethod
 from typing import Tuple
 from ..base import Character, Component, Compound, Selector
-from ..util.load import loadGB, loadComponents, loadCompounds, loadConfig, stdout, stderr, loadExternal
+from ..util.load import loadData, loadConfig, loadReference, stdout, stderr
 from ..util.build import buildSelector, buildClassifier, buildRootMap, buildRoots
 import time
 
@@ -18,11 +18,8 @@ class Chai(ABC):
         self.charset = charset
         self.CONFIG = loadConfig(config)
         self.STDOUT = stdout(result)
-        self.GB                 = loadGB()
-        '''保存 GB 字集'''
-        self.COMPONENTS         = loadComponents(withTopology=True)
+        self.COMPONENTS, self.COMPOUNDS = loadData(withTopology=True,withCorner=True)
         '''保存所有部件的名称到部件的映射'''
-        self.COMPOUNDS          = loadCompounds(self.COMPONENTS)
         '''保存所有复合体的名称到复合体的映射'''
         self.selector: Selector = buildSelector(self.CONFIG)
         self.classifier         = buildClassifier(self.CONFIG)
@@ -30,7 +27,7 @@ class Chai(ABC):
         self.componentRoot, self.compoundRoot = buildRoots(self.CONFIG,
             self.COMPONENTS, self.COMPOUNDS)
         if log:
-            self.REFERENCE = loadExternal(reference)
+            self.REFERENCE = loadReference(reference)
             self.STDERR = stderr(log)
             self.STDERR.setLevel(10)
         else:
@@ -70,12 +67,10 @@ class Chai(ABC):
         '''
         向所有 ``self.GB`` 中的汉字注入编码
         '''
-        for characterName in self.GB:
-            if characterName in self.COMPONENTS:
-                character = self.COMPONENTS[characterName]
-            else:
-                character = self.COMPOUNDS[characterName]
-            character.code = self._encode(character)
+        for name, character in self.COMPONENTS.items():
+            if character.inGB: character.codeList = self._encode(character)
+        for name, character in self.COMPOUNDS.items():
+            if character.inGB: character.codeList = self._encode(character)
 
     def __call__(self) -> None:
         '''
@@ -88,21 +83,16 @@ class Chai(ABC):
         t2 = time.time()
         self.encode()
         t3 = time.time()
-        if self.charset == 'test':
-            for characterName in self.GB:
-                if characterName in self.COMPONENTS:
-                    character = self.COMPONENTS[characterName]
-                    self.STDOUT.write('%s\t%s\n' % (characterName, character.code))
-                    if self.STDERR and character.code != self.REFERENCE[character.name]:
-                        self._log(character)
-            self.STDOUT.close()
-        else:
-            for characterName in self.GB:
-                if characterName in self.COMPONENTS:
-                    character = self.COMPONENTS[characterName]
-                else:
-                    character = self.COMPOUNDS[characterName]
-                self.STDOUT.write('%s\t%s\n' % (characterName, character.code))
-                if self.STDERR and character.code != self.REFERENCE[character.name]:
-                    self._log(character)
-            self.STDOUT.close()
+        GB = sorted([v.name for k, v in {**self.COMPONENTS, **self.COMPOUNDS}.items() if v.inGB], key=ord)
+        for characterName in GB:
+            if characterName in self.COMPONENTS:
+                character = self.COMPONENTS[characterName]
+            elif self.charset == 'GB':
+                character = self.COMPOUNDS[characterName]
+            else:
+                continue
+            for code in character.codeList:
+                self.STDOUT.write('%s\t%s\n' % (characterName, code))
+            if self.STDERR and character.codeList != self.REFERENCE[character.name]:
+                self._log(character)
+        self.STDOUT.close()
