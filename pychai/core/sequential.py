@@ -39,11 +39,12 @@ class Sequential(Chai):
         validFragments = [[]]
         for rIndex, rStroke in enumerate(root.strokeList):
             rStrokeTopo = root.topologyMatrix[rIndex]
+            end = component.length - root.length + rIndex + 1
             for _ in range(len(validFragments)):
                 indexList = validFragments.pop(0)
                 start = indexList[-1] + 1 if indexList else 0
-                end = component.length - root.length + rIndex + 1
-                for cIndex, cStroke in enumerate(component.strokeList[start:end]):
+                searchField = component.strokeList[start:end]
+                for cIndex, cStroke in enumerate(searchField, start):
                     if strokeFeatureEqual(cStroke.feature, rStroke.feature):
                         cStrokeTopo = [component.topologyMatrix[cIndex][i]
                                        for i in indexList]
@@ -89,7 +90,7 @@ class Sequential(Chai):
         if component.name in self.componentRoot:
             return (self.componentRoot[component.name],)
         schemeBinary = self.generateScheme(component)
-        scheme = tuple(map(lambda x: component.binaryDict[x], schemeBinary))
+        scheme = tuple(component.binaryDict[x] for x in schemeBinary)
         if not self.withCornerInformation:
             return scheme
         def findRoot(index):
