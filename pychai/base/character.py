@@ -1,4 +1,5 @@
 from typing import List, Dict, Optional, Tuple
+from functools import cached_property
 from .stroke import Stroke
 from .pinyin import StandardPinyin
 
@@ -15,15 +16,15 @@ class Character:
         self.pinyinList = [StandardPinyin(pinyin) for pinyin in pinyinList]
         self.infoList = []
 
-    @property
+    @cached_property
     def initialList(self):
         return list(set([pinyin.initial for pinyin in self.pinyinList]))
 
-    @property
+    @cached_property
     def shengyunList(self):
         return list(set([pinyin.shengyun for pinyin in self.pinyinList]))
 
-    @property
+    @cached_property
     def shengyundiaoList(self):
         return [pinyin.shengyundiao for pinyin in self.pinyinList]
 
@@ -74,7 +75,7 @@ class Component(Character):
         stroke = Stroke(name, 'M0 0')
         return cls(name, [stroke], [[]])
 
-    @property
+    @cached_property
     def length(self) -> int:
         '''
         :returns: 字的笔画数量
