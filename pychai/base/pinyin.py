@@ -1,10 +1,9 @@
-'''
-'''
-
-from typing import Tuple
-from functools import cached_property
 from abc import ABC
-from re import compile as RE, sub
+from functools import cached_property
+from re import compile as RE
+from re import sub
+from typing import Tuple
+
 
 class Pinyin(ABC):
     regularize = {}

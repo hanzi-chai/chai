@@ -2,10 +2,13 @@
 计算四角缓存
 '''
 
-from typing import List, Set, Tuple, Dict
-from numpy import array, abs
+from typing import Dict, List, Set, Tuple
+
+from numpy import abs, array
 from numpy import ndarray as Point
+
 from ..base import Component
+
 
 def findCorner(component: Component) -> Tuple[int]:
     criticalPointList, fromStroke = findCriticalPoints(component)

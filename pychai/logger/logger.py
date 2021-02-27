@@ -1,6 +1,7 @@
 from logging import Formatter, LogRecord
-from typing import Dict
+
 from ..base import Component
+
 
 class DecompositionFormatter(Formatter):
     def format(self, record: LogRecord):

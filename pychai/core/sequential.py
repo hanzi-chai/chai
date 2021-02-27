@@ -1,8 +1,10 @@
 from bisect import bisect_left, bisect_right
 from typing import List, Tuple
+
+from ..base import Character, Component, Compound
+from ..util import findCorner, strokeFeatureEqual
 from .chai import Chai
-from ..base import Component, Compound, Character
-from ..util import strokeFeatureEqual, findCorner
+
 
 class Sequential(Chai):
     '''

@@ -1,9 +1,12 @@
 from functools import cached_property
-from typing import List, Dict
+from re import compile as RE
+from typing import List
+
 from numpy import array
 from numpy import ndarray as Point
-from .curve import Curve, Linear, Cubic
-from re import compile as RE
+
+from .curve import Cubic, Curve, Linear
+
 
 class Stroke:
     '''

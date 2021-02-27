@@ -1,5 +1,7 @@
 from sqlite3 import connect
+
 from yaml import BaseLoader, load
+
 main = connect('pychai/data/main')
 cursor = main.cursor()
 # cursor.execute('ALTER TABLE main ADD COLUMN svg VARCHAR(1000)')

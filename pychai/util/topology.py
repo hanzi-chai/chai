@@ -3,8 +3,10 @@
 '''
 
 from typing import List
+
 from numpy import array, cross, inf, stack
 from numpy.linalg import norm, pinv
+
 from ..base import Component, Curve, Linear
 
 TOL = 0.05

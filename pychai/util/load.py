@@ -1,13 +1,17 @@
-from os.path import join, dirname, exists
-from typing import List, Dict, Tuple
-from logging import getLogger, FileHandler, DEBUG
+from logging import DEBUG, FileHandler, getLogger
+from os.path import dirname, exists, join
+from pickle import load
 from re import compile as RE
 from sqlite3 import connect
-from pickle import load
-from yaml import BaseLoader, SafeLoader, load as loadyaml
-from .build import buildTopology, buildCorner
-from ..base import Stroke, Component, Compound
+from typing import Dict, List, Tuple
+
+from yaml import BaseLoader, SafeLoader
+from yaml import load as loadyaml
+
+from ..base import Component, Compound, Stroke
 from ..logger import DecompositionFormatter
+from .build import buildCorner, buildTopology
+
 
 def _path(relativePath):
     return join(dirname(__file__), relativePath)

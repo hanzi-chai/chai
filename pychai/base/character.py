@@ -1,7 +1,9 @@
-from typing import List, Dict, Optional, Tuple
 from functools import cached_property
-from .stroke import Stroke
+from typing import Dict, List, Optional, Tuple
+
 from .pinyin import StandardPinyin
+from .stroke import Stroke
+
 
 class Character:
     '''

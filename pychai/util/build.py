@@ -1,12 +1,11 @@
-'''
-'''
-
 from pickle import dump
 from typing import Dict
-from .topology import findTopology
-from .corner import findCorner
+
 from ..base import Component, Compound, Selector
 from ..preset import *
+from .corner import findCorner
+from .topology import findTopology
+
 
 def buildClassifier(config) -> Dict[str,int]:
     strokeClassifier: Dict[str, int] = {}

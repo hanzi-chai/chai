@@ -2,12 +2,15 @@
 Chai 基类
 '''
 
+import time
 from abc import ABC, abstractmethod
 from typing import Tuple
+
 from ..base import Character, Component, Compound, Selector
-from ..util.load import loadData, loadConfig, loadReference, stdout, stderr
-from ..util.build import buildSelector, buildClassifier, buildRootMap, buildRoots
-import time
+from ..util.build import (buildClassifier, buildRootMap, buildRoots,
+                          buildSelector)
+from ..util.load import loadConfig, loadData, loadReference, stderr, stdout
+
 
 class Chai(ABC):
     '''

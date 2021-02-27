@@ -1,8 +1,10 @@
 from abc import ABC, abstractmethod
-from typing import List, Dict, Callable
+from typing import Callable, Dict, List
+
 from numpy import array
 from numpy import ndarray as Point
 from numpy.linalg import norm
+
 
 class Curve(ABC):
     '''
