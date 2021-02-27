@@ -23,10 +23,11 @@ class Stroke:
         commandList = self.commandSplitter.split(svg)
         position: Point = array([int(x) for x in commandList.pop(0)[1:].split(' ')])
         for curveString in commandList:
-            curve, position = self.factory(position, curveString)
+            curve, position = Stroke.factory(position, curveString)
             self.curveList.append(curve)
 
-    def factory(self, position, curveString):
+    @staticmethod
+    def factory(position, curveString):
         command = curveString[0]
         parameterList = [int(x) for x in curveString[1:].split(' ')]
         p0 = position
