@@ -1,3 +1,4 @@
+'''拼音对象模块'''
 from abc import ABC
 from functools import cached_property
 from re import compile as RE

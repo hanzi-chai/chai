@@ -1,3 +1,4 @@
+'''汉字对象模块'''
 from functools import cached_property
 from typing import Dict, List, Optional, Tuple
 
@@ -14,9 +15,8 @@ class Character:
         self.operator                     = operator
         self.scheme: Tuple[Component,...] = ()
         self.codeList                     = []
-        self.inGB = inGB
-        self.pinyinList = [StandardPinyin(pinyin) for pinyin in pinyinList]
-        self.infoList = []
+        self.pinyinList                   = [StandardPinyin(pinyin) for pinyin in pinyinList]
+        self.infoList                     = []
 
     @cached_property
     def initialList(self):

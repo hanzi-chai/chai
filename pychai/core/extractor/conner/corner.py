@@ -7,7 +7,7 @@ from typing import Dict, List, Set, Tuple
 from numpy import abs, array
 from numpy import ndarray as Point
 
-from ..base import Component
+from ....base import Component
 
 
 def findCorner(component: Component) -> Tuple[int]:

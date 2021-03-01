@@ -1,3 +1,4 @@
+'''笔画对象模块'''
 from functools import cached_property
 from re import compile as RE
 from typing import List

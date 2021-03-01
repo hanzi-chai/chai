@@ -4,7 +4,7 @@
 
 from typing import List, Tuple
 
-from ..base import Component, Stroke
+from ....base import Component, Stroke
 
 
 def bias(component: Component, scheme) -> float:

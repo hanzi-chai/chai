@@ -1,6 +1,4 @@
-'''
-计算拓扑缓存
-'''
+'''预计算拓扑数据模块'''
 
 from typing import List
 

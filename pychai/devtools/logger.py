@@ -1,4 +1,5 @@
-from logging import Formatter, LogRecord
+'''日志模块'''
+from logging import Formatter, LogRecord, getLogger, FileHandler, DEBUG
 
 from ..base import Component
 
@@ -19,3 +20,14 @@ class DecompositionFormatter(Formatter):
                 descriptor = ', '.join(f'{binary:0{component.length}b}[{component.binaryDict[binary].name}]' for binary in scheme)
                 output += f'  - {descriptor}: {score}\n'
         return output
+
+# TODO: 改写logger的调用方式
+def stderr(path):
+    MSG_FMT = '%(message)s'
+
+    logger = getLogger('binaryDictLogger')
+    handler = FileHandler(path, encoding='utf-8')
+    handler.setLevel(DEBUG)
+    handler.setFormatter(DecompositionFormatter(MSG_FMT))
+    logger.addHandler(handler)
+    return logger

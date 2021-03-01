@@ -1,3 +1,4 @@
+'''图像曲线对象模块'''
 from abc import ABC, abstractmethod
 from typing import Callable, Dict, List
 
