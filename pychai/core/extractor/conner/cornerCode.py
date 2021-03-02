@@ -28,13 +28,13 @@ class CornerCode(Pictorial):
         schemeBinary = self.generateComponentSchemeBinary(component)
         scheme = tuple(component.binaryDict[x] for x in schemeBinary)
         lt, rt, lb, rb = map(CornerCode.findRoot, findCorner(component))
-        component.scheme = {
+        component.scheme.append({
             'all': scheme,
             'lt': lt,
             'rt': rt,
             'lb': lb,
             'rb': rb
-        }
+        })
 
     def generateCompoundScheme(self, compound: Compound):
         scheme = super().generateCompoundScheme(compound)
@@ -45,10 +45,10 @@ class CornerCode(Pictorial):
         rt = fstScheme['rt'] if operator in 'hl' else scdScheme['rt']
         lb = fstScheme['lb'] if operator in 'zq' else scdScheme['lb']
         rb = fstScheme['lb'] if operator in 'hz' else scdScheme['lb']
-        compound.scheme =  {
+        compound.scheme.append({
             'all': scheme,
             'lt': lt,
             'rt': rt,
             'lb': lb,
             'rb': rb
-        }
+        })

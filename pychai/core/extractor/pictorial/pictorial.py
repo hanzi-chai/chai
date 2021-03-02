@@ -136,9 +136,9 @@ class Pictorial(CharacterFeatureExtractor):
 
     def extract(self):
         for component in self.components:
-            component.scheme = self.generateComponentScheme(component)
+            component.scheme.append(self.generateComponentScheme(component))
         for compound in self.compounds:
-            compound.scheme = self.generateCompoundScheme()
+            compound.scheme.append(self.generateCompoundScheme())
 
     # TODO: 实现方法
     @classmethod

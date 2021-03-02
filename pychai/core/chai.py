@@ -12,7 +12,7 @@ class Chai():
     def __init__(self,
         characters: List[str],
         extractors: List[CharacterFeatureExtractor],
-        encoders):
+        encoders): # TODO: 未决定编码函数应该放在哪里
         self.characters = characters
         self.extractors = extractors
         self.featureMapping
