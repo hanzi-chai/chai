@@ -53,6 +53,7 @@ def cacheTopo(con, job='new'):
 	write(con, 'topo', topos, job=job, dtype='VARCHAR(200)')
 
 def cacheCorner(con, job='new'):
+    corners = []
 	for name, strokes in readStorkes(con):
 	    corner = str(list(findCorner(strokes))).strip('()').replace(' ', '')
 	    corners.append((name, corner))
