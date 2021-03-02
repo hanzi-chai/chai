@@ -1,31 +1,33 @@
 '''拆分系统功能调用模块'''
 
-from abc import ABC, abstractmethod
-from typing import Tuple
+from typing import List
 
 from ..base import Character, Component, Compound, Selector
+from .extractor import CharacterFeatureExtractor
 
 
 # TODO: 把 chai 改写成全局调用功能的模块
-class Chai(ABC):
-    '''
-    抽象基类
-    '''
-    def __init__(self, characters, extractors, encoders, config='config.yaml', result='result.yaml'):
-        self.characters: list[str]
-        self.featureExtractors: list
+class Chai():
+
+    def __init__(self,
+        characters: List[str],
+        extractors: List[CharacterFeatureExtractor],
+        encoders):
+        self.characters = characters
+        self.extractors = extractors
         self.featureMapping
 
     def extract(self):
-        pass
+        for extractor in self.extractors:
+            extractor.extract()
 
     def encode(self):
         pass
 
-    def output(self):
+    def saveSchemeFile(self):
         pass
 
-    def run(self):
+    def saveCodeFile(self):
         pass
 
         # '''

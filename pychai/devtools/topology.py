@@ -60,7 +60,7 @@ def relation(c1: Curve, c2: Curve):
         return relationStr(t1, t2, c1, c2)
 
 def newton(f, J, x):
-    '''牛顿迭代法求两 Bezier 曲线交点的 t1, t2 值。
+    '''牛顿迭代法求两 Bezier 曲线交点的 t1, t2 值
     '''
     epsilon = 0.000001
     n = 0
@@ -72,12 +72,9 @@ def newton(f, J, x):
 def position(c1: Curve, c2: Curve):
     '''确定两曲线的位置关系
 
-    输入：
-        c1: 曲线一
-        c2: 曲线二
-
-    输出：
-        str: 位置描述。
+    :param c1: 曲线一
+    :param c2: 曲线二
+    :return: 位置描述。
     '''
     start1 = c1.p0
     end1 = c1.p1 if isinstance(c1, Linear) else c1.p3
@@ -111,11 +108,8 @@ def position(c1: Curve, c2: Curve):
 def findTopology(component: Component) -> List[List[str]]:
     '''生成 Component 对象的拓扑描述矩阵
 
-    输入：
-        component: Component对象
-
-    输出：
-        List[List[str]]: 拓扑描述矩阵的左下三角。形如下：
+    :param component: Component对象
+    :return: 拓扑描述矩阵的左下三角。形如下：
         [
             [],
             [`笔画2与笔画1的拓扑描述`],
@@ -151,11 +145,8 @@ def findTopology(component: Component) -> List[List[str]]:
 def topologyRevers(topologyStr: str):
     '''拓扑描述取反，即笔顺交换之后的拓扑描述。
 
-    参数：
-        topologyStr: 原拓扑描述字符串
-
-    输出：
-        str: 取反后的拓扑描述字符串。例如输入「右散」则输出「左散」，输入「前中连」则输出「中前连」
+    :param topologyStr: 原拓扑描述字符串
+    :return: 取反后的拓扑描述字符串。例如输入「右散」则输出「左散」，输入「前中连」则输出「中前连」
         输入「前前连_右散」则输出「前前连_左散」。
     '''
     if '_' in topologyStr:
@@ -185,13 +176,11 @@ def topologyRevers(topologyStr: str):
 def strokeTopologySimplify(strokeFeature1: str, strokeFeature2: str, topologyStr: str):
     '''拓扑简化。（暂弃用）
 
-    输入：
-        strokeFeature1: 前一笔的笔画类型
-        strokeFeatrue2: 后一笔的笔画类型
-        topologyStr: 两笔之间的拓扑描述字符串
+    :param strokeFeature1: 前一笔的笔画类型
+    :param strokeFeatrue2: 后一笔的笔画类型
+    :param topologyStr: 两笔之间的拓扑描述字符串
 
-    输出：
-        str: 简化后的拓扑描述。
+    :return: 简化后的拓扑描述。
     '''
     if strokeFeature1 == '横' or strokeFeature1 == '提':
         topologyStr = topologyStr.replace('前中连', '下散')

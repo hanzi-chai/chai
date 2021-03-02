@@ -1,52 +1,65 @@
+'''预置择优函数组件
 '''
-预置择优函数组件
-'''
-
 from typing import List, Tuple
 
 from ....base import Component, Stroke
 
 
 def bias(component: Component, scheme) -> float:
-    '''
-    按拆分方案的取大程度求值。在总笔画数量一定的情况下，靠前的字根笔画数越多，靠后的字根笔画数越少，数值越大
+    '''按拆分方案的取大程度求值。
 
+    在总笔画数量一定的情况下，靠前的字根笔画数越多，靠后的字根笔画数越少，数值越大
     设部件总共 L 笔，拆为 k 个字根，第 i 字根含 l_i 笔，则具体公式为：
 
     .. math::
 
        -\sum_{i=1}^k l_i (L+1)^{-i}
 
+    :param component: 部件字
+    :param scheme: 部件字拆分
+    :return: 上述公式计算结果
     '''
 
     return -sum(component.length**(-index) * bin(part)[2:].count('1') for index, part in enumerate(scheme))
 
 def length(_: Component, scheme) -> int:
-    '''
-    求拆分方案中含字根的数量
+    '''求拆分方案中含字根的数量
+
+    :param component: 部件字
+    :param scheme: 部件字拆分
+    :return: 字根数量
     '''
 
     return len(scheme)
 
-def order(component: Component, scheme) -> tuple:
-    '''
-    功能：拆分估值器，按拆分中切片符合笔顺程度进行估值，越符合，值越小
-    输入：拆分，字对象（参数需求：笔画数）
-    输出：拆分估值
+def order(component: Component, scheme) -> Tuple[int, ...]:
+    '''按拆分中切片符合笔顺程度进行估值，越符合，值越小
+
+    :param component: 部件字
+    :param scheme: 部件字拆分
+    :return: 按字根顺序扩展的笔画序列元组
     '''
 
     mx = 1 << component.length
     return sum((tuple(k for k in range(component.length) if (mx >> (k + 1)) & part) for part in scheme), tuple())
 
-def topology(component: Component, scheme) -> tuple:
-    r'''
-    我们可以基于笔画关系定义字根关系。如果两个字根间有笔画相交，则为交；不交但有笔画为连，则为连；其余为散。这样定义出来的映射记为 :math:`\tilde{\mathcal R}(r_1,r_2)`\ ，然后定义发生交、连、散的次数分别为 :math:`u_1,u_2,u_3`\ 。字根数量不可能超过 :math:`L`\ ，所以我们定义
+def topology(component: Component, scheme) -> Tuple[int, ...]:
+    r'''按字根之间相连、相交的数量进行估值
+
+    我们可以基于笔画关系定义字根关系。如果两个字根间有笔画相交，则为交；不交但有笔画为连，则为连；
+    其余为散。这样定义出来的映射记为 :math:`\tilde{\mathcal R}(r_1,r_2)`\ ，然后定义发生
+    交、连、散的次数分别为 :math:`u_1,u_2,u_3`\ 。字根数量不可能超过 :math:`L`\ ，所以我们
+    定义
 
     .. math::
 
        \mathcal H(d)=u_1(L+1)^2+u_2(L+1)+u_3+\sum_{i=1}^k\operatorname{len}(p_i)(L+1)^{-i}
 
     这样，我们就能把「天」拆成「一大」，把「夫」拆成「二人」。
+
+    :param component: 部件字
+    :param scheme: 部件字拆分
+    :return: 按字根顺序扩展的笔画序列元组
     '''
     connectionBetweenRootsCount = 0
     crossBewteenRootsCount = 0
@@ -74,8 +87,7 @@ def topology(component: Component, scheme) -> tuple:
     return (connectionBetweenRootsCount, crossBewteenRootsCount)
 
 def similarity(component: Component, scheme):
-    '''
-    功能：估值器，按拆分中各切片比例相似性估值（弃用）
+    '''功能：估值器，按拆分中各切片比例相似性估值（弃用）
     '''
     cpnStrokeList = component.strokeList
     length = len(cpnStrokeList)

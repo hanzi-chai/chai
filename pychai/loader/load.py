@@ -7,11 +7,7 @@ from re import compile as RE
 from sqlite3 import connect
 from typing import Dict, List, Tuple
 
-from yaml import BaseLoader, SafeLoader
-from yaml import load as loadyaml
-
 from ..base import Component, Compound, Stroke
-from .build import buildCorner, buildTopology
 
 
 def _path(relativePath):
@@ -55,9 +51,6 @@ def loadData(withTopology=False, withCorner=False) -> Tuple[Dict[str, Component]
         else:
             compoundData.append(row)
     return COMPONENTS, COMPOUNDS
-
-def stdout(path):
-    return open(path, 'w', encoding='utf-8')
 
 def loadComponentsDependencies(characterNames: List[str]):
     pass

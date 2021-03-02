@@ -57,7 +57,7 @@ class Stroke:
     @cached_property
     def linearizeLength(self):
         '''
-        :returns: 笔画所包含的所有曲线的线性长度之和
+        :return: 笔画所包含的所有曲线的线性长度之和
         '''
         return sum(curve.linearizeLength() for curve in self.curveList)
 

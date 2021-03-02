@@ -49,8 +49,7 @@ class StandardPinyin(Pinyin):
     splitter = RE(r'(?<=[bpmfdtnlgkhjqxzcsrh开合齐撮])(?=[aeiouünm])')
 
 class FixedZeroPinyin(Pinyin):
-    '''
-    固定零声母，如微软双拼
+    '''固定零声母，如微软双拼
     '''
     regularize = {
         '^([aoe])': r'零\1',
@@ -60,8 +59,7 @@ class FixedZeroPinyin(Pinyin):
     splitter = RE(r'(?<=[bpmfdtnlgkhjqxzcsryw零])(?=[aeiouünm])')
 
 class FlexibleZeroPinyin(Pinyin):
-    '''
-    不固定零声母，如自然码双拼、小鹤双拼
+    '''不固定零声母，如自然码双拼、小鹤双拼
     '''
     regularize = {
         '^([aoe])': r'零\1\1',

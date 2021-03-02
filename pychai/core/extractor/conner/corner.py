@@ -1,6 +1,4 @@
-'''
-计算四角缓存
-'''
+'''计算四角缓存'''
 
 from typing import Dict, List, Set, Tuple
 

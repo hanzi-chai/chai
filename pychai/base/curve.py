@@ -16,7 +16,7 @@ class Curve(ABC):
     def __call__(self, t: float) -> Point:
         '''
         :param t: 参数
-        :returns: 该参数下点的取值
+        :return: 该参数下点的取值
 
         '''
         pass
@@ -24,7 +24,7 @@ class Curve(ABC):
     @abstractmethod
     def derivative(self) -> Callable:
         '''
-        :returns: 参数曲线的导函数
+        :return: 参数曲线的导函数
 
         '''
         pass
@@ -32,7 +32,7 @@ class Curve(ABC):
     @abstractmethod
     def linearize(self):
         '''
-        :returns: 参数曲线的首尾两个点所确定的一次参数曲线
+        :return: 参数曲线的首尾两个点所确定的一次参数曲线
 
         '''
         pass
@@ -40,7 +40,7 @@ class Curve(ABC):
     @abstractmethod
     def linearizeLength(self) -> float:
         '''
-        :returns: 参数曲线的首尾两个点之间的距离，也即其线性长度
+        :return: 参数曲线的首尾两个点之间的距离，也即其线性长度
 
         '''
         pass
