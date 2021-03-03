@@ -48,14 +48,14 @@ def cacheLevel(con, job='new'):
 def cacheTopo(con, job='new'):
 	topos = []
     for name, strokes in readStorkes(con):
-	    topo = ''.join([str(i) for j in findTopology(strokes) for i in j])
+	    topo = ','.join(str(i) for j in findTopology(strokes) for i in j)
 	    topos.append((name, topo))
 	write(con, 'topo', topos, job=job, dtype='VARCHAR(200)')
 
 def cacheCorner(con, job='new'):
     corners = []
 	for name, strokes in readStorkes(con):
-	    corner = str(list(findCorner(strokes))).strip('()').replace(' ', '')
+	    corner = ','.join(str(i) for i in findCorner(strokes))
 	    corners.append((name, corner))
 	write(con, 'corner', corners, job=job, dtype='VARCHAR(50)')
 
