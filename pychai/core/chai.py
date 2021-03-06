@@ -91,8 +91,7 @@ class Chai(ABC):
                 character = self.COMPOUNDS[characterName]
             else:
                 continue
-            for code in character.codeList:
-                self.STDOUT.write('%s\t%s\n' % (characterName, code))
-            if self.STDERR and character.codeList != self.REFERENCE[character.name]:
+            self.STDOUT.write(f'{characterName}: [{", ".join(character.codeList)}]\n')
+            if self.STDERR and not all(code in character.codeList for code in self.REFERENCE[character.name]):
                 self._log(character)
         self.STDOUT.close()

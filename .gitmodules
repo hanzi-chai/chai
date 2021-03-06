@@ -1,0 +1,3 @@
+[submodule "awesome"]
+	path = awesome
+	url = git@lanluoxiao:hanzi-chai/awesome.git
