@@ -92,6 +92,7 @@ class Chai(ABC):
             else:
                 continue
             self.STDOUT.write(f'{characterName}: [{", ".join(character.codeList)}]\n')
+            print(character.codeList, self.REFERENCE[character.name])
             if self.STDERR and not all(code in character.codeList for code in self.REFERENCE[character.name]):
                 self._log(character)
         self.STDOUT.close()
