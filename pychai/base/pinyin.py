@@ -2,6 +2,7 @@
 '''
 
 from typing import Tuple
+from functools import cached_property
 from abc import ABC
 from re import compile as RE, sub
 
@@ -17,13 +18,13 @@ class Pinyin(ABC):
             shengyun = sub(k, v, shengyun)
         self.sheng, self.yun = self.splitter.split(shengyun)
 
-    @property
+    @cached_property
     def initial(self) -> str: return self.string[0]
 
-    @property
+    @cached_property
     def shengyun(self) -> Tuple: return (self.sheng, self.yun)
 
-    @property
+    @cached_property
     def shengyundiao(self) -> Tuple: return (self.sheng, self.yun, self.diao)
 
 class StandardPinyin(Pinyin):
