@@ -74,7 +74,7 @@ def stderr(path):
     MSG_FMT = '%(message)s'
 
     logger = getLogger('binaryDictLogger')
-    handler = FileHandler(path, encoding='utf-8')
+    handler = FileHandler(path, mode='w', encoding='utf-8')
     handler.setLevel(DEBUG)
     handler.setFormatter(DecompositionFormatter(MSG_FMT))
     logger.addHandler(handler)

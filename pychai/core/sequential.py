@@ -97,6 +97,7 @@ class Sequential(Chai):
             binary = 1 << (component.length - index - 1)
             cornerRootBinary, = filter(lambda x: x & binary, schemeBinary)
             root = component.binaryDict[cornerRootBinary]
+            return root
         lt, rt, lb, rb = map(findRoot, findCorner(component))
         return {
             'all': scheme,
