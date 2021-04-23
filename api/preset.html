@@ -1,0 +1,277 @@
+<!doctype html>
+<html class="no-js">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/><link rel="index" title="索引" href="../genindex.html" /><link rel="search" title="搜索" href="../search.html" /><link rel="next" title="工具" href="util.html" /><link rel="prev" title="核心" href="core.html" />
+
+    <meta name="generator" content="sphinx-3.4.3, furo 2020.12.30.beta24"/>
+        <title>预设筛 - 汉字自动拆分系统 1.0.1 文档</title>
+      <link rel="stylesheet" href="../_static/styles/furo.css?digest=33d2fc4f3f180ec1ffc6524e273e21d7d58cbe49">
+    <link rel="stylesheet" href="../_static/pygments.css">
+    <link media="(prefers-color-scheme: dark)" rel="stylesheet" href="../_static/pygments_dark.css">
+    
+
+
+<style>
+  :root {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+  }
+
+  /* For allowing end-user-specific overrides */
+  .override-light {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  .override-dark {
+    --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+  }
+</style><link rel="stylesheet" href="../_static/styles/furo-extensions.css?digest=26485485040e7aaf717c13fd0188a5ad2c2deb60">
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script defer="defer" src="../_static/jquery.js"></script>
+    <script defer="defer" src="../_static/underscore.js"></script>
+    <script defer="defer" src="../_static/doctools.js"></script>
+    <script defer="defer" src="../_static/translations.js"></script>
+    <script async="async" defer="defer" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script defer="defer" type="text/x-mathjax-config">MathJax.Hub.Config({"TeX": {"Macros": {"r": "{\\boldsymbol r}", "p": "{\\boldsymbol p}"}}, "HTML-CSS": {"availableFonts": ["TeX"], "scale": 100}})</script>
+    <script defer src="../_static/scripts/main.js?digest=e931d09b2a40c1bb82b542effe772014573baf67"></script></head>
+  <body dir="">
+    
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+      stroke-width="1.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+      <path stroke="none" d="M0 0h24v24H0z"/>
+      <line x1="4" y1="6" x2="20" y2="6" />
+      <line x1="10" y1="12" x2="20" y2="12" />
+      <line x1="6" y1="18" x2="20" y2="18" />
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+      class="feather feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+      class="feather feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">汉字自动拆分系统 1.0.1 文档</div></a>
+    </div>
+    <div class="header-right">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  
+  
+  <span class="sidebar-brand-text">汉字自动拆分系统 1.0.1 文档</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html">
+  <input class="sidebar-search" placeholder=搜索 name="q">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption"><span class="caption-text">开发者文档</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../developer/flow.html">拆分基本流程</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API 文档</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="base.html">基础</a></li>
+<li class="toctree-l1"><a class="reference internal" href="core.html">核心</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">预设筛</a></li>
+<li class="toctree-l1"><a class="reference internal" href="util.html">工具</a></li>
+</ul>
+
+</div>
+</div>
+      </div>
+      
+    </div>
+  </aside>
+  <main class="main">
+    <div class="content">
+      <article role="main">
+        <label class="toc-overlay-icon toc-content-icon" for="__toc">
+          <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+        </label>
+        <div class="section" id="id1">
+<h1>预设筛<a class="headerlink" href="#id1" title="永久链接至标题">¶</a></h1>
+<div class="section" id="id2">
+<h2>根少筛<a class="headerlink" href="#id2" title="永久链接至标题">¶</a></h2>
+<dl class="py function">
+<dt id="pychai.preset.length">
+<code class="sig-prename descclassname">pychai.preset.</code><code class="sig-name descname">length</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">_</span></em>, <em class="sig-param"><span class="n">scheme</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pychai.preset.length" title="永久链接至目标">¶</a></dt>
+<dd><p>求拆分方案中含字根的数量</p>
+<dl class="field-list simple">
+<dt class="field-odd">返回类型</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+</div>
+<div class="section" id="id3">
+<h2>取大筛<a class="headerlink" href="#id3" title="永久链接至标题">¶</a></h2>
+<dl class="py function">
+<dt id="pychai.preset.bias">
+<code class="sig-prename descclassname">pychai.preset.</code><code class="sig-name descname">bias</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">component</span></em>, <em class="sig-param"><span class="n">scheme</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pychai.preset.bias" title="永久链接至目标">¶</a></dt>
+<dd><p>按拆分方案的取大程度求值。在总笔画数量一定的情况下，靠前的字根笔画数越多，靠后的字根笔画数越少，数值越大</p>
+<p>设部件总共 L 笔，拆为 k 个字根，第 i 字根含 l_i 笔，则具体公式为：</p>
+<div class="math-wrapper"><div class="math notranslate nohighlight">
+\[-\sum_{i=1}^k l_i (L+1)^{-i}\]</div></div>
+<dl class="field-list simple">
+<dt class="field-odd">返回类型</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+</div>
+<div class="section" id="id4">
+<h2>笔顺筛<a class="headerlink" href="#id4" title="永久链接至标题">¶</a></h2>
+<dl class="py function">
+<dt id="pychai.preset.order">
+<code class="sig-prename descclassname">pychai.preset.</code><code class="sig-name descname">order</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">component</span></em>, <em class="sig-param"><span class="n">scheme</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pychai.preset.order" title="永久链接至目标">¶</a></dt>
+<dd><p>功能：拆分估值器，按拆分中切片符合笔顺程度进行估值，越符合，值越小
+输入：拆分，字对象（参数需求：笔画数）
+输出：拆分估值</p>
+<dl class="field-list simple">
+<dt class="field-odd">返回类型</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+</div>
+<div class="section" id="id5">
+<h2>拓扑筛<a class="headerlink" href="#id5" title="永久链接至标题">¶</a></h2>
+<dl class="py function">
+<dt id="pychai.preset.topology">
+<code class="sig-prename descclassname">pychai.preset.</code><code class="sig-name descname">topology</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">component</span></em>, <em class="sig-param"><span class="n">scheme</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pychai.preset.topology" title="永久链接至目标">¶</a></dt>
+<dd><p>我们可以基于笔画关系定义字根关系。如果两个字根间有笔画相交，则为交；不交但有笔画为连，则为连；其余为散。这样定义出来的映射记为 <span class="math notranslate nohighlight">\(\tilde{\mathcal R}(r_1,r_2)\)</span>，然后定义发生交、连、散的次数分别为 <span class="math notranslate nohighlight">\(u_1,u_2,u_3\)</span>。字根数量不可能超过 <span class="math notranslate nohighlight">\(L\)</span>，所以我们定义</p>
+<div class="math-wrapper"><div class="math notranslate nohighlight">
+\[\mathcal H(d)=u_1(L+1)^2+u_2(L+1)+u_3+\sum_{i=1}^k\operatorname{len}(p_i)(L+1)^{-i}\]</div></div>
+<p>这样，我们就能把「天」拆成「一大」，把「夫」拆成「二人」。</p>
+<dl class="field-list simple">
+<dt class="field-odd">返回类型</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+</div>
+</div>
+
+      </article>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="util.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">工具</div>
+              </div>
+              <svg><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="core.html">
+              <svg><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">核心</div>
+                
+              </div>
+            </a>
+        </div>
+
+        <div class="related-information">
+              Copyright &#169; 2021, 汉字自动拆分系统研发团队
+            |
+            Built with <a href="https://www.sphinx-doc.org/">Sphinx</a>
+              and
+              <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+              <a href="https://github.com/pradyunsg/furo">Furo theme</a>.
+            |
+            <a class="muted-link" href="../_sources/api/preset.rst.txt"
+               rel="nofollow">
+              显示源代码
+            </a>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            目录
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">预设筛</a><ul>
+<li><a class="reference internal" href="#id2">根少筛</a></li>
+<li><a class="reference internal" href="#id3">取大筛</a></li>
+<li><a class="reference internal" href="#id4">笔顺筛</a></li>
+<li><a class="reference internal" href="#id5">拓扑筛</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </main>
+</div>
+  </body>
+</html>

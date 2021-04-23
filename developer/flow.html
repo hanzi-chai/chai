@@ -1,0 +1,322 @@
+<!doctype html>
+<html class="no-js">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/><link rel="index" title="索引" href="../genindex.html" /><link rel="search" title="搜索" href="../search.html" /><link rel="next" title="基础" href="../api/base.html" /><link rel="prev" title="欢迎来到 pychai 的文档！" href="../index.html" />
+
+    <meta name="generator" content="sphinx-3.4.3, furo 2020.12.30.beta24"/>
+        <title>拆分基本流程 - 汉字自动拆分系统 1.0.1 文档</title>
+      <link rel="stylesheet" href="../_static/styles/furo.css?digest=33d2fc4f3f180ec1ffc6524e273e21d7d58cbe49">
+    <link rel="stylesheet" href="../_static/pygments.css">
+    <link media="(prefers-color-scheme: dark)" rel="stylesheet" href="../_static/pygments_dark.css">
+    
+
+
+<style>
+  :root {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+  }
+
+  /* For allowing end-user-specific overrides */
+  .override-light {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  .override-dark {
+    --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+  }
+</style><link rel="stylesheet" href="../_static/styles/furo-extensions.css?digest=26485485040e7aaf717c13fd0188a5ad2c2deb60">
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script defer="defer" src="../_static/jquery.js"></script>
+    <script defer="defer" src="../_static/underscore.js"></script>
+    <script defer="defer" src="../_static/doctools.js"></script>
+    <script defer="defer" src="../_static/translations.js"></script>
+    <script async="async" defer="defer" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script defer="defer" type="text/x-mathjax-config">MathJax.Hub.Config({"TeX": {"Macros": {"r": "{\\boldsymbol r}", "p": "{\\boldsymbol p}"}}, "HTML-CSS": {"availableFonts": ["TeX"], "scale": 100}})</script>
+    <script defer src="../_static/scripts/main.js?digest=e931d09b2a40c1bb82b542effe772014573baf67"></script></head>
+  <body dir="">
+    
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+      stroke-width="1.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+      <path stroke="none" d="M0 0h24v24H0z"/>
+      <line x1="4" y1="6" x2="20" y2="6" />
+      <line x1="10" y1="12" x2="20" y2="12" />
+      <line x1="6" y1="18" x2="20" y2="18" />
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+      class="feather feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+      class="feather feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">汉字自动拆分系统 1.0.1 文档</div></a>
+    </div>
+    <div class="header-right">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  
+  
+  <span class="sidebar-brand-text">汉字自动拆分系统 1.0.1 文档</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html">
+  <input class="sidebar-search" placeholder=搜索 name="q">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption"><span class="caption-text">开发者文档</span></p>
+<ul class="current">
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">拆分基本流程</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API 文档</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api/base.html">基础</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/core.html">核心</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/preset.html">预设筛</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/util.html">工具</a></li>
+</ul>
+
+</div>
+</div>
+      </div>
+      
+    </div>
+  </aside>
+  <main class="main">
+    <div class="content">
+      <article role="main">
+        <label class="toc-overlay-icon toc-content-icon" for="__toc">
+          <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+        </label>
+        <div class="section" id="id1">
+<h1>拆分基本流程<a class="headerlink" href="#id1" title="永久链接至标题">¶</a></h1>
+<div class="section" id="id2">
+<h2>概述<a class="headerlink" href="#id2" title="永久链接至标题">¶</a></h2>
+<p>在用户文档中，您了解到了如何构建自己的方案类，并结合配置文件输出码表。现在让我们来了解一下拆分过程背后的原理。汉字结构复杂多变，现有的各种编码方案对汉字的拆分方式也各不相同；提取出一个通用的逻辑来实现汉字的自动拆分似乎是很困难的事情。但是，在回顾现有的各种编码方案时，我们观察到了以下特点：</p>
+<ol class="arabic simple">
+<li><p>绝大多数汉字根据其构字原理（例如形声构字、会意构字等）可以划分为多个部件，部件又可以划分为更小的部件，经过层层分解之后可以用七八百个基本部件以简单的几何关系组合而成。同时，绝大多数编码方案的字根数量在 200 ~ 400 之间，所以 <strong>汉字拆分的实质是首先将基本部件拆分为字根，然后由基本部件的拆分推导出所有汉字的拆分</strong>。</p></li>
+<li><p>绝大多数编码方案限制拆分以笔画为最小单位。由于基本部件的笔画数量少，我们可以枚举出他们所有可能的拆分方案；在得到所有可能的拆分方案后，我们再根据拆分规则选取最佳的拆分，就可以实现汉字自动拆分。</p></li>
+</ol>
+<p>所以，本系统的实现方式就是：首先针对基本部件枚举所有可能的拆分方案，以拆分规则选取最佳拆分方案；然后用基本部件的拆分方案推导出所有汉字的拆分方案。</p>
+</div>
+<div class="section" id="id3">
+<h2>基本元素<a class="headerlink" href="#id3" title="永久链接至标题">¶</a></h2>
+<p>为了实现自动拆分，我们首先需要将汉字的信息，特别是基本部件的信息在计算机中进行合理的表示。让我们首先从笔画开始。</p>
+<div class="section" id="id4">
+<h3>笔画<a class="headerlink" href="#id4" title="永久链接至标题">¶</a></h3>
+<p>在本系统中，<strong>笔画</strong> 表示为由一段或多段曲线顺次相接组成的几何图形。不同于字体文件，笔画在这里被认为是没有宽度的，对它的描述比较接近人们的书写直观，例如「横」就表示为一条直线段，「撇」可以表示为一条曲线段，而「横撇」则可以表示为一条直线段接上一条曲线段。直线段的具体数学形式是一次 Bezier 曲线（<code class="docutils literal notranslate"><span class="pre">base.Linear</span></code>），曲线段的具体数学形式是三次 Bezier 曲线（<code class="docutils literal notranslate"><span class="pre">base.Cubic</span></code>），它们具体的实现可参阅有关 API 文档。</p>
+<p>国标规范将笔画分为 31 种，它们用曲线表示的具体方法请参见<a class="reference external" href="https://hanzi-chai.github.io/data/">数据库文档</a>。</p>
+</div>
+<div class="section" id="id5">
+<h3>部件、复合体和汉字<a class="headerlink" href="#id5" title="永久链接至标题">¶</a></h3>
+<p>在本系统中，<strong>部件</strong> 表示为由一个或多个笔画按一定顺序在给定位置上排布组成的几何图形。例如，部件「十」是由「横」和「竖」两个笔画在特定的位置上排布组成的部件，而这两个笔画分别由各自的直线段的参数确定。</p>
+<p>当两个或以上的部件按一定的方位关系组合时，它们就形成了一个 <strong>复合体</strong>。例如，「口」和「巴」按左右关系组合成复合体「吧」，但按上下关系组合成复合体「邑」。为了准确地描述这种组合的特点，我们需要引入 <strong>算符</strong> 来表示这种关系。上面提到的左右关系的运算符为 <code class="docutils literal notranslate"><span class="pre">h</span></code>，而上下关系的运算符为 <code class="docutils literal notranslate"><span class="pre">z</span></code>。本项目共采用 12 个运算符，具体参见<a class="reference external" href="https://hanzi-chai.github.io/data/">数据库文档</a>。复合体可以继续按各种运算符组合起来，形成更加复杂的复合体。为了描述方便起见，由一个运算符所组合起来的两个部件或复合体被称为这个运算符的 <strong>算元</strong>。</p>
+<p>部件和复合体统称为 <strong>汉字</strong>。</p>
+</div>
+<div class="section" id="id6">
+<h3>字根<a class="headerlink" href="#id6" title="永久链接至标题">¶</a></h3>
+<p><strong>字根</strong> 是所有汉字编码方案中用来编码的基本元素。考虑到本系统的实现方式，这里我们把字根分为 <strong>部件字根</strong> 和 <strong>复合体字根</strong>。以五笔字型编码方案为例，「大」是一个部件字根，它可以用于「天」等汉字的拆分；而「羽」则是一个复合体字根，可以用于「翼」等字的拆分。</p>
+</div>
+</div>
+<div class="section" id="chai">
+<h2><code class="docutils literal notranslate"><span class="pre">Chai</span></code> 基类<a class="headerlink" href="#chai" title="永久链接至标题">¶</a></h2>
+<p>在用户文档中我们看到，用户构建的方案类继承自各模板类，而所有模板类最终都是基类 <code class="docutils literal notranslate"><span class="pre">Chai</span></code> 的子类。基类的意义在于定义了大部分的类属性，并定义了进行自动拆分的步骤。当我们构建方案类 <code class="docutils literal notranslate"><span class="pre">Input</span></code>、实例化得到 <code class="docutils literal notranslate"><span class="pre">input</span></code> 并执行 <code class="docutils literal notranslate"><span class="pre">input()</span></code> 时，调用的就是基类的 <code class="docutils literal notranslate"><span class="pre">__call__()</span></code> 方法：</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="c1"># 对部件进行拆分</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">getComponentScheme</span><span class="p">()</span>
+    <span class="c1"># 对复合字进行拆分</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">getCompoundScheme</span><span class="p">()</span>
+    <span class="c1"># 对汉字进行编码</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">encode</span><span class="p">()</span>
+    <span class="c1"># 把结果输出到文件</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
+<p>在一个高的层次上说，这几句话干了这些事情：</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">self.getComponentScheme()</span></code>：生成所有部件拆分，结果保存到
+<code class="docutils literal notranslate"><span class="pre">self.COMPONENTS</span></code> 的各个部件中；</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">self.getCompoundScheme()</span></code>：生成所有复合体拆分，结果保存到
+<code class="docutils literal notranslate"><span class="pre">self.COMPOUNDS</span></code> 的各个复合体中；</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">self.encode()</span></code>：生成所有给定字集中字的编码，保存到 <code class="docutils literal notranslate"><span class="pre">self.COMPONENTS</span></code> 或者 <code class="docutils literal notranslate"><span class="pre">self.COMPOUNDS</span></code> 中的相应对象中。</p></li>
+</ul>
+</div>
+<div class="section" id="id7">
+<h2>对部件进行拆分<a class="headerlink" href="#id7" title="永久链接至标题">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">self.getComponentScheme()</span></code> 的内容如下：</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">getComponentScheme</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">'''</span>
+<span class="sd">    向所有 ``self.COMPONENTS`` 中的部件注入拆分方案</span>
+<span class="sd">    '''</span>
+    <span class="k">for</span> <span class="n">component</span><span class="p">:</span> <span class="n">Component</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">COMPONENTS</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+        <span class="n">component</span><span class="o">.</span><span class="n">scheme</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getComponentScheme</span><span class="p">(</span><span class="n">component</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>公有方法 <code class="docutils literal notranslate"><span class="pre">getComponentScheme()</span></code> 有一个同名的私有方法 <code class="docutils literal notranslate"><span class="pre">_getComponentScheme()</span></code> 与之对应，私有方法负责处理每一个部件的拆分，然后由公有方法调用私有方法进行汇总。但是基类不负责私有方法的实现，而是派发给各个模板类来实现。而 <code class="docutils literal notranslate"><span class="pre">_getComponentScheme()</span></code> 在逻辑上需要分为两个阶段来实现：</p>
+<div class="section" id="id8">
+<h3>（1）生成所有可能的拆分方案<a class="headerlink" href="#id8" title="永久链接至标题">¶</a></h3>
+<p>这一部分不同模板类实现的方式非常不同，故放在模板类中讨论。</p>
+</div>
+<div class="section" id="id9">
+<h3>（2）选择最优拆分方案<a class="headerlink" href="#id9" title="永久链接至标题">¶</a></h3>
+<p>如何从大量可能的拆分方案中选取最优的拆分方案？我们回顾了很多汉字编码方案，观察到了以下事实：</p>
+<ol class="arabic simple">
+<li><p>绝大多数汉字编码方案会提出不止一条拆分规则，例如「取大优先」「能连不交」等等。我们认为它的实质是：所有可能的拆分方案首先经过第一条拆分规则检验，与该规则不符合的被筛去，剩余一定数量的拆分方案再经过第二条拆分规则检验，与该规则不符合的再被筛去，如此循环往复直到最后一条拆分规则执行完毕，此时应该有且仅有一个拆分方案被保留。</p></li>
+<li><p>我们认为每条拆分规则的实质是：每条规则可以表示为一个函数，这个函数的输入是拆分方案，输出是一个数值；在所有的拆分方案中，只有使这个函数取到最值的才能通过此轮筛查，其余将被筛去。例如，如果拆分规则是「根少优先」，当所有可能的拆分方案中最少的是 4 个字根时，所有大于等于 5 个字根的拆分方案都将在这一轮中筛去。对于最值而言，取最大值和取最小值是可以通过加个负号来互相转变的，所以我们可以统一定义为最小值。</p></li>
+</ol>
+<p>我们形象地将每个这样的函数称为「筛（sieve）」。综上所述，一个典型的选取过程是这样的：</p>
+<ul class="simple">
+<li><p>我们得到了 10 个拆分方案</p></li>
+<li><p>「根少优先」：我们发现其中 3 个方案将字拆为 2 个字根，5 个方案将字拆为 3 个字根，2 个方案将字拆为 4 个字根。那么，筛去所有不为 2 个字根的拆分方案，剩余 3 个拆分方案；</p></li>
+<li><p>「取大优先」：我们发现其中 2 个方案的第一个字根有 3 笔，另一个方案的第一个字根有 2 笔。那么，筛去第一个字根有 2 笔的拆分方案，剩余 2 个拆分方案；</p></li>
+<li><p>「笔顺优先」：我们发现剩余的两个方案中第一个字根分别来自原部件的第 1, 2, 4 笔和第 1, 2, 3 笔，则后者更符合笔顺。由此我们得到了唯一的拆分方案。</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="id10">
+<h2>拆分复合体<a class="headerlink" href="#id10" title="永久链接至标题">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">getCompoundScheme</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">'''</span>
+<span class="sd">    向所有 ``self.COMPOUNDS`` 中的部件注入拆分方案</span>
+<span class="sd">    '''</span>
+    <span class="k">for</span> <span class="n">compound</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">COMPOUNDS</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+        <span class="n">compound</span><span class="o">.</span><span class="n">scheme</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getCompoundScheme</span><span class="p">(</span><span class="n">compound</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>复合体的拆分遵守类似的逻辑，<code class="docutils literal notranslate"><span class="pre">_getCompoundScheme()</span></code> 派发给模板类来实现。</p>
+</div>
+</div>
+
+      </article>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="../api/base.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">基础</div>
+              </div>
+              <svg><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="../index.html">
+              <svg><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Home</div>
+                
+              </div>
+            </a>
+        </div>
+
+        <div class="related-information">
+              Copyright &#169; 2021, 汉字自动拆分系统研发团队
+            |
+            Built with <a href="https://www.sphinx-doc.org/">Sphinx</a>
+              and
+              <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+              <a href="https://github.com/pradyunsg/furo">Furo theme</a>.
+            |
+            <a class="muted-link" href="../_sources/developer/flow.rst.txt"
+               rel="nofollow">
+              显示源代码
+            </a>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            目录
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">拆分基本流程</a><ul>
+<li><a class="reference internal" href="#id2">概述</a></li>
+<li><a class="reference internal" href="#id3">基本元素</a><ul>
+<li><a class="reference internal" href="#id4">笔画</a></li>
+<li><a class="reference internal" href="#id5">部件、复合体和汉字</a></li>
+<li><a class="reference internal" href="#id6">字根</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#chai"><code class="docutils literal notranslate"><span class="pre">Chai</span></code> 基类</a></li>
+<li><a class="reference internal" href="#id7">对部件进行拆分</a><ul>
+<li><a class="reference internal" href="#id8">（1）生成所有可能的拆分方案</a></li>
+<li><a class="reference internal" href="#id9">（2）选择最优拆分方案</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id10">拆分复合体</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </main>
+</div>
+  </body>
+</html>
